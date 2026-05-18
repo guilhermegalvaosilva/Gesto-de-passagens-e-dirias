@@ -89,3 +89,30 @@ Start command: npm start
 ```
 
 Configure a porta pelo ambiente da plataforma, se ela fornecer a variavel `PORT`. O servidor usa `PORT` automaticamente e, se ela nao existir, usa `3002`.
+
+## Link pelo GitHub Pages
+
+Este repositorio ja inclui o workflow `.github/workflows/pages.yml` para gerar
+um link pelo GitHub Pages a cada push na branch `main`.
+
+No GitHub, abra:
+
+```text
+Settings > Pages > Build and deployment > Source > GitHub Actions
+```
+
+Depois rode o workflow `Deploy GitHub Pages` ou faca um novo push para `main`.
+O link ficara parecido com:
+
+```text
+https://guilhermegalvaosilva.github.io/Gesto-de-passagens-e-dirias/
+```
+
+Observacao: GitHub Pages publica apenas o frontend. Para formularios e painel
+administrativo funcionarem nesse link, publique o backend em Render/Railway e
+crie no GitHub a variavel `VITE_API_BASE` apontando para a API publicada, por
+exemplo:
+
+```text
+https://seu-backend.onrender.com/api
+```
