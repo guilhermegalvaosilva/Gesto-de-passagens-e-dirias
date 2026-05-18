@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Message } from "../../components/common/Message";
 import { REQUESTS_PAGE_SIZE } from "../../config/appConfig";
+import { REQUEST_STATUS_OPTIONS } from "../../config/requestStatus";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 import { apiRequest, logoutAdmin, savedSession } from "../../services/api";
 import { exportRequestsWorkbook } from "../../utils/excel";
-import { isToday } from "../../utils/formatters";
+import { isToday, normalizedFilterText } from "../../utils/formatters";
 import { AdminSidebar } from "./AdminSidebar";
 import { AuditPanel } from "./AuditPanel";
 import { Dashboard } from "./Dashboard";
@@ -23,6 +24,8 @@ export function AdminPage({ onBack }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [needFilter, setNeedFilter] = useState("all");
+  const [sectorFilter, setSectorFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState(null);
 
@@ -63,8 +66,24 @@ export function AdminPage({ onBack }) {
     if (dateFilter === "today") {
       rows = rows.filter((item) => isToday(item.createdAtIso || item.createdAt));
     }
+    if (needFilter !== "all") {
+      rows = rows.filter(
+        (item) => normalizedFilterText(item.necessidade) === normalizedFilterText(needFilter),
+      );
+    }
+    if (sectorFilter !== "all") {
+      rows = rows.filter((item) => (item.setorFiocruz || "Não informado") === sectorFilter);
+    }
     return rows;
-  }, [requests, search, statusFilter, dateFilter]);
+  }, [requests, search, statusFilter, dateFilter, needFilter, sectorFilter]);
+
+  const sectorOptions = useMemo(
+    () =>
+      [...new Set(requests.map((item) => item.setorFiocruz || "Não informado"))].sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [requests],
+  );
 
   const totalPages = Math.max(1, Math.ceil(filteredRequests.length / REQUESTS_PAGE_SIZE));
   const pageRows = filteredRequests.slice(
@@ -88,6 +107,20 @@ export function AdminPage({ onBack }) {
     await loadData();
   }
 
+  async function updateRequestStatus(item, status) {
+    const next = {
+      ...item,
+      status,
+      updatedAt: new Date().toISOString(),
+      updatedAtClient: new Date().toLocaleString("pt-BR"),
+    };
+    await apiRequest(`/solicitacoes/${encodeURIComponent(item.id)}`, {
+      method: "PUT",
+      body: JSON.stringify(next),
+    });
+    await loadData();
+  }
+
   async function logout() {
     await logoutAdmin();
     onBack();
@@ -105,18 +138,18 @@ export function AdminPage({ onBack }) {
         <div className="dashboard-content">
           <div className="dashboard-header">
             <div className="dashboard-title-block">
-              <span className="section-kicker">Visao administrativa</span>
-              <h2>Painel Administrativo</h2>
+              <span className="section-kicker">Visão administrativa</span>
+              <h2>Painel administrativo</h2>
               <p className="subtitle">
-                Operacao consolidada, filtros vivos e documentos prontos para
-                auditoria, financeiro e logistica.
+                Operação consolidada, filtros vivos e documentos prontos para
+                auditoria, financeiro e logística.
               </p>
             </div>
             <div className="dashboard-header-meta">
               <div className="admin-session-card">
                 <span className="status-dot" />
                 <div>
-                  <small>Usuario ativo</small>
+                  <small>Usuário ativo</small>
                   <strong>{savedSession().login || "admin"}</strong>
                 </div>
               </div>
@@ -125,7 +158,7 @@ export function AdminPage({ onBack }) {
                   Atualizar
                 </button>
                 <button type="button" onClick={exportWorkbook}>
-                  Exportar XLSM
+                  Exportar Excel
                 </button>
                 <button type="button" className="btn-ghost" onClick={logout}>
                   Sair
@@ -143,12 +176,19 @@ export function AdminPage({ onBack }) {
               setStatusFilter={setStatusFilter}
               dateFilter={dateFilter}
               setDateFilter={setDateFilter}
+              needFilter={needFilter}
+              setNeedFilter={setNeedFilter}
+              sectorFilter={sectorFilter}
+              setSectorFilter={setSectorFilter}
+              sectorOptions={sectorOptions}
+              statusOptions={REQUEST_STATUS_OPTIONS}
               rows={pageRows}
               total={filteredRequests.length}
               page={page}
               totalPages={totalPages}
               setPage={setPage}
               onDelete={deleteRequest}
+              onStatusChange={updateRequestStatus}
             />
           )}
           {activeTab === "alteracoes" && <AuditPanel logs={auditLogs} />}

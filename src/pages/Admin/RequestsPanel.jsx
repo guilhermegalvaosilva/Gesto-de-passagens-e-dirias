@@ -8,27 +8,42 @@ export function RequestsPanel({
   setStatusFilter,
   dateFilter,
   setDateFilter,
+  needFilter,
+  setNeedFilter,
+  sectorFilter,
+  setSectorFilter,
+  sectorOptions,
+  statusOptions,
   rows,
   total,
   page,
   totalPages,
   setPage,
   onDelete,
+  onStatusChange,
 }) {
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("all");
+    setDateFilter("all");
+    setNeedFilter("all");
+    setSectorFilter("all");
+  }
+
   return (
     <>
       <section className="dashboard-section admin-panel active">
         <div className="dashboard-card">
           <div className="panel-heading">
             <div>
-              <span className="section-kicker">Consulta rapida</span>
+              <span className="section-kicker">Consulta rápida</span>
               <h3>Busca inteligente</h3>
               <p>Pesquise por nome, evento, projeto, origem ou destino.</p>
             </div>
           </div>
           <div className="search-row">
             <label className="search-label">
-              <span>Pesquisar solicitacoes</span>
+              <span>Pesquisar solicitações</span>
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -36,8 +51,8 @@ export function RequestsPanel({
               />
             </label>
             <div className="admin-tools">
-              <button type="button" onClick={() => setSearch("")}>
-                Limpar filtro
+              <button type="button" onClick={clearFilters}>
+                Limpar filtros
               </button>
             </div>
           </div>
@@ -48,10 +63,10 @@ export function RequestsPanel({
           <div className="panel-heading">
             <div>
               <span className="section-kicker">Registros</span>
-              <h3>Solicitacoes cadastradas</h3>
+              <h3>Solicitações cadastradas</h3>
               <p className="table-note">
-                A fila mostra poucas solicitacoes por vez, com filtros e paginacao
-                para manter a analise leve.
+                A fila mostra poucas solicitações por vez, com filtros e paginação
+                para manter a análise leve.
               </p>
             </div>
           </div>
@@ -60,14 +75,38 @@ export function RequestsPanel({
               <span>Status</span>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">Todos</option>
-                <option value="Recebida">Recebidas</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
-              <span>Periodo</span>
+              <span>Período</span>
               <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
                 <option value="all">Todas</option>
                 <option value="today">Hoje</option>
+              </select>
+            </label>
+            <label>
+              <span>Necessidade</span>
+              <select value={needFilter} onChange={(event) => setNeedFilter(event.target.value)}>
+                <option value="all">Todas</option>
+                <option value="Passagens">Passagens</option>
+                <option value="Diárias">Diárias</option>
+                <option value="Passagens e Diárias">Passagens e Diárias</option>
+              </select>
+            </label>
+            <label>
+              <span>Setor</span>
+              <select value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)}>
+                <option value="all">Todos</option>
+                {sectorOptions.map((sector) => (
+                  <option key={sector} value={sector}>
+                    {sector}
+                  </option>
+                ))}
               </select>
             </label>
             <div className="queue-meta">
@@ -81,21 +120,29 @@ export function RequestsPanel({
           </div>
           <div className="records-list">
             {rows.length ? (
-              rows.map((item) => <RecordCard key={item.id} item={item} onDelete={onDelete} />)
+              rows.map((item) => (
+                <RecordCard
+                  key={item.id}
+                  item={item}
+                  onDelete={onDelete}
+                  onStatusChange={onStatusChange}
+                  statusOptions={statusOptions}
+                />
+              ))
             ) : (
-              <div className="empty-records">Nenhuma solicitacao encontrada.</div>
+              <div className="empty-records">Nenhuma solicitação encontrada.</div>
             )}
           </div>
           <div className="pagination-row">
             <span>
-              Pagina {page} de {totalPages}
+              Página {page} de {totalPages}
             </span>
             <div className="pagination-actions">
               <button className="btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 Anterior
               </button>
               <button className="btn-ghost" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                Proxima
+                Próxima
               </button>
             </div>
           </div>

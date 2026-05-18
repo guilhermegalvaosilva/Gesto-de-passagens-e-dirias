@@ -15,6 +15,40 @@ import {
   findLinkedProject,
 } from "../../utils/requestBuilder";
 
+function digitsOnly(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function validateForm(form) {
+  const errors = [];
+  const cpf = digitsOnly(form.cpf);
+
+  if (cpf.length !== 11) {
+    errors.push("Informe um CPF com 11 números.");
+  }
+
+  if (form.dataIda && form.dataVolta && form.dataVolta < form.dataIda) {
+    errors.push("A data de volta não pode ser anterior à data de ida.");
+  }
+
+  if (form.dataEvento && form.dataIda && form.dataEvento < form.dataIda) {
+    errors.push("A data do evento não pode ser anterior à data de ida.");
+  }
+
+  if (!findLinkedProject(form.idFiotec)) {
+    errors.push("Selecione um ID FIOTEC válido da lista de projetos.");
+  }
+
+  if (
+    form.necessarioValorMaximoDiaria === "SIM" &&
+    !digitsOnly(form.valorMaximoDiaria)
+  ) {
+    errors.push("Informe o valor máximo da diária.");
+  }
+
+  return errors;
+}
+
 export function RequestFormPage({ onBack }) {
   const [form, setForm] = useState(blankForm);
   const [editing, setEditing] = useState(null);
@@ -51,12 +85,12 @@ export function RequestFormPage({ onBack }) {
       setEditId(item.id);
       setMessage({
         type: "success",
-        text: `Solicitacao ${item.id} carregada para edicao.`,
+        text: `Solicitação ${item.id} carregada para edição.`,
       });
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Erro ao carregar solicitacao.",
+        text: error.message || "Erro ao carregar solicitação.",
       });
     }
   }, []);
@@ -70,6 +104,15 @@ export function RequestFormPage({ onBack }) {
 
   async function submit(event) {
     event.preventDefault();
+    const validationErrors = validateForm(form);
+    if (validationErrors.length) {
+      setMessage({
+        type: "error",
+        text: validationErrors.join(" "),
+      });
+      return;
+    }
+
     try {
       const data = buildRequestObject(form, editing);
       const auditLogs = editing
@@ -93,8 +136,8 @@ export function RequestFormPage({ onBack }) {
       setMessage({
         type: "success",
         text: editing
-          ? `Solicitacao atualizada com sucesso. ${auditLogs.length} alteracao(oes) registrada(s).`
-          : `Solicitacao enviada com sucesso. ID: ${data.id}`,
+          ? `Solicitação atualizada com sucesso. ${auditLogs.length} alteração(ões) registrada(s).`
+          : `Solicitação enviada com sucesso. ID: ${data.id}`,
       });
       setForm(blankForm);
       setEditing(null);
@@ -102,36 +145,42 @@ export function RequestFormPage({ onBack }) {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Erro ao salvar solicitacao.",
+        text: error.message || "Erro ao salvar solicitação.",
       });
     }
   }
 
   return (
-    <section className="card form-card">
+    <section className="card form-card journey-form-card">
       <div className="section-heading form-hero-heading">
         <div>
-          <span className="section-kicker">Nova solicitacao</span>
-          <h2>Formulario para cadastro de solicitacoes</h2>
+          <span className="section-kicker">Fiocruz Brasília | NUGB</span>
+          <h2>Formulário de solicitação de viagem</h2>
           <p className="subtitle">
-            Preencha os campos obrigatorios. O sistema valida projeto, datas e
-            dados antes de salvar.
+            Preencha os dados do evento, projeto, viajante, passagens e diárias
+            para registro e conferência administrativa.
           </p>
         </div>
         <button className="btn btn-ghost" type="button" onClick={onBack}>
-          Voltar ao inicio
+          Voltar ao início
         </button>
+      </div>
+      <div className="form-progress-lane" aria-hidden="true">
+        <span>Evento</span>
+        <span>Projeto</span>
+        <span>Viajante</span>
+        <span>Viagem</span>
       </div>
 
       <form onSubmit={submit}>
         <section className="form-section edit-lookup-section">
           <h3>
             <span>ID</span>
-            Editar solicitacao enviada
+            Editar solicitação enviada
           </h3>
           <div className="edit-lookup-row">
             <label className="search-label">
-              <span>ID da solicitacao</span>
+              <span>ID da solicitação</span>
               <input
                 value={editId}
                 onChange={(event) => setEditId(event.target.value)}
@@ -139,7 +188,7 @@ export function RequestFormPage({ onBack }) {
               />
             </label>
             <button type="button" onClick={() => loadForEditById(editId)}>
-              Carregar para edicao
+              Carregar para edição
             </button>
             {editing && (
               <button
@@ -151,7 +200,7 @@ export function RequestFormPage({ onBack }) {
                   setEditId("");
                 }}
               >
-                Cancelar edicao
+                Cancelar edição
               </button>
             )}
           </div>
@@ -162,11 +211,11 @@ export function RequestFormPage({ onBack }) {
         </section>
 
         <FormSection number="01" title="Cadastro do Evento">
-          <Input full label="1. Descricao da Solicitacao" name="descricaoSolicitacao" value={form.descricaoSolicitacao} setField={setField} required />
+          <Input full label="1. Descrição da Solicitação" name="descricaoSolicitacao" value={form.descricaoSolicitacao} setField={setField} required />
           <TextArea full label="2. Nome do Evento" name="nomeEvento" value={form.nomeEvento} setField={setField} required />
           <Input label="3. Data do Evento" name="dataEvento" type="date" min={today} value={form.dataEvento} setField={setField} required />
           <Input label="4. Local de Realizacao do Evento" name="localEvento" value={form.localEvento} setField={setField} required />
-          <TextArea full label="5. Justificativa da Solicitacao" name="justificativa" value={form.justificativa} setField={setField} required />
+          <TextArea full label="5. Justificativa da Solicitação" name="justificativa" value={form.justificativa} setField={setField} required />
         </FormSection>
 
         <FormSection number="02" title="Projeto Vinculado" accent>
@@ -176,7 +225,7 @@ export function RequestFormPage({ onBack }) {
           <Input label="9. Setor Fiocruz" name="setorFiocruz" value={form.setorFiocruz} setField={setField} readOnly />
         </FormSection>
 
-        <FormSection number="03" title="Informacoes do Viajante">
+        <FormSection number="03" title="Informações do Viajante">
           <Input full label="10. Nome Completo" name="nomeCompleto" value={form.nomeCompleto} setField={setField} required />
           <Input label="11. Data de Nascimento" name="dataNascimento" type="date" max={today} value={form.dataNascimento} setField={setField} required />
           <Input label="12. Cargo / Funcao" name="cargoFuncao" value={form.cargoFuncao} setField={setField} required />
@@ -186,8 +235,8 @@ export function RequestFormPage({ onBack }) {
           <Input label="16. Conta Corrente" name="contaCorrente" value={form.contaCorrente} setField={setField} required />
         </FormSection>
 
-        <FormSection number="04" title="Informacoes da Solicitacao">
-          <Select label="17. Qual a necessidade?" name="necessidade" value={form.necessidade} setField={setField} options={["Passagens", "Diarias", "Passagens e Diarias"]} required />
+        <FormSection number="04" title="Informações da Solicitação">
+          <Select label="17. Qual a necessidade?" name="necessidade" value={form.necessidade} setField={setField} options={["Passagens", "Diárias", "Passagens e Diárias"]} required />
           <Input label="18. Local de Origem" name="localOrigem" value={form.localOrigem} setField={setField} required />
           <Input label="19. Data de Ida" name="dataIda" type="date" min={today} value={form.dataIda} setField={setField} required />
           <Select label="20. Horario de Ida" name="horarioIda" value={form.horarioIda} setField={setField} options={["MANHA", "TARDE", "NOITE", "INDIFERENTE"]} required />
@@ -195,9 +244,9 @@ export function RequestFormPage({ onBack }) {
           <Input label="22. Local de Destino" name="localDestino" value={form.localDestino} setField={setField} required />
           <Input label="23. Data de Volta" name="dataVolta" type="date" min={today} value={form.dataVolta} setField={setField} required />
           <Select label="24. Horario de Volta" name="horarioVolta" value={form.horarioVolta} setField={setField} options={["MANHA", "TARDE", "NOITE", "INDIFERENTE"]} required />
-          <Select label="25. E necessario valor maximo para diaria?" name="necessarioValorMaximoDiaria" value={form.necessarioValorMaximoDiaria} setField={setField} options={["SIM", "NAO"]} />
+          <Select label="25. É necessário valor máximo para diária?" name="necessarioValorMaximoDiaria" value={form.necessarioValorMaximoDiaria} setField={setField} options={["SIM", "NÃO"]} />
           <div className="form-group">
-            <label>26. Qual o valor maximo para diaria total</label>
+            <label>26. Qual o valor máximo para diária total?</label>
             <div className="money-field">
               <input
                 disabled={form.necessarioValorMaximoDiaria !== "SIM"}
@@ -228,10 +277,10 @@ export function RequestFormPage({ onBack }) {
         <Message message={message} />
         <div className="actions form-actions">
           <button type="submit">
-            {editing ? "Salvar alteracoes e gerar PDF" : "Enviar, salvar e gerar PDF"}
+            {editing ? "Salvar alterações e gerar PDF" : "Enviar, salvar e gerar PDF"}
           </button>
           <button className="btn btn-ghost" type="button" onClick={onBack}>
-            Voltar ao inicio
+            Voltar ao início
           </button>
         </div>
       </form>

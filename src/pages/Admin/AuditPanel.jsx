@@ -11,10 +11,10 @@ export function AuditPanel({ logs }) {
       <div className="admin-table-panel audit-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Historico do dia</span>
-            <h3>Alteracoes realizadas</h3>
+            <span className="section-kicker">Histórico do dia</span>
+            <h3>Alterações realizadas</h3>
             <p className="table-note">
-              Mostra somente edicoes registradas hoje em formularios carregados
+              Mostra somente edições registradas hoje em formulários carregados
               pelo ID.
             </p>
           </div>
@@ -45,7 +45,7 @@ export function AuditPanel({ logs }) {
             </table>
           </div>
         ) : (
-          <div className="empty-records">Nenhuma alteracao registrada hoje.</div>
+          <div className="empty-records">Nenhuma alteração registrada hoje.</div>
         )}
       </div>
     </section>

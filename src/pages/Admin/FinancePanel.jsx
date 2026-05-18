@@ -20,17 +20,17 @@ export function FinancePanel({ requests }) {
       <div className="dashboard-card">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Financas</span>
+            <span className="section-kicker">Finanças</span>
             <h3>Contabilidade de gastos</h3>
             <p className="table-note">
-              Resumo calculado com base no campo valor maximo para diaria total.
+              Resumo calculado com base no campo valor máximo para diária total.
             </p>
           </div>
         </div>
         <div className="insight-grid">
-          <Insight title="Total estimado de diarias" value={formatCurrency(total)} note="Soma dos valores preenchidos." />
-          <Insight title="Solicitacoes com valor" value={values.length} note="Registros com valor numerico identificado." />
-          <Insight title="Media por solicitacao" value={formatCurrency(average)} note="Media apenas entre solicitacoes com valor." />
+          <Insight title="Total estimado de diárias" value={formatCurrency(total)} note="Soma dos valores preenchidos." />
+          <Insight title="Solicitações com valor" value={values.length} note="Registros com valor numérico identificado." />
+          <Insight title="Média por solicitação" value={formatCurrency(average)} note="Média apenas entre solicitações com valor." />
         </div>
       </div>
     </section>

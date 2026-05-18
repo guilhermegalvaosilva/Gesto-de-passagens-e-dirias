@@ -28,16 +28,16 @@ export function FlightsPanel({ requests }) {
       <div className="dashboard-card">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Logistica</span>
-            <h3>Informacoes dos voos</h3>
+            <span className="section-kicker">Logística</span>
+            <h3>Informações dos voos</h3>
             <p className="table-note">
               Acompanhe pedidos de passagens, rotas mais frequentes e registros
-              sem indicacao de voo.
+              sem indicação de voo.
             </p>
           </div>
         </div>
         <div className="insight-grid">
-          <Insight title="Pedidos com indicacao de voo" value={withFlight} note="Campo indicacao do voo de ida preenchido." />
+          <Insight title="Pedidos com indicação de voo" value={withFlight} note="Campo indicação do voo de ida preenchido." />
           <Insight title="Rotas diferentes" value={routes.size} note="Origem e destino informados." />
           <Insight title="Passagens sem voo indicado" value={missing} note="Pedidos de passagem que precisam de complemento." />
         </div>

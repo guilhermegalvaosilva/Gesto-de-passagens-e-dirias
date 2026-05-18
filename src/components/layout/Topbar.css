@@ -1,19 +1,22 @@
 .topbar {
-  min-height: 82px;
+  max-width: 1480px;
+  min-height: 86px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 20px clamp(18px, 4vw, 44px);
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  margin: 0 auto;
+  padding: 18px clamp(14px, 2.4vw, 28px);
+  background: transparent;
   color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 0;
 }
 
 .brand-lockup {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
 .brand-mark,
@@ -23,13 +26,14 @@
   overflow: hidden;
   border-radius: 8px;
   background: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .brand-logo {
-  width: 188px;
-  height: 54px;
-  padding: 8px 12px;
+  width: 168px;
+  height: 50px;
+  padding: 7px 10px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
 }
 
 .brand-mark img,
@@ -41,20 +45,42 @@
 }
 
 .topbar .eyebrow {
-  color: rgba(255, 255, 255, 0.72);
+  color: #79e6d9;
+}
+
+.topbar h1 {
+  color: #fff;
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 850;
 }
 
 .topbar-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
+  display: grid;
+  gap: 2px;
+  min-width: 220px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  text-align: right;
+  backdrop-filter: blur(16px);
+}
+
+.topbar-meta strong {
+  color: #fff;
+  font-size: 14px;
 }
 
 @media (max-width: 900px) {
   .topbar {
     display: grid;
+  }
+
+  .topbar-meta {
+    min-width: 0;
+    text-align: left;
   }
 }
 
@@ -66,5 +92,56 @@
   .brand-logo {
     width: 146px;
     height: 46px;
+  }
+}
+
+/* Fiocruz institutional header */
+.topbar {
+  color: #fff;
+}
+
+.brand-logo {
+  width: 198px;
+  height: 58px;
+  padding: 8px 12px;
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 28, 68, 0.2);
+}
+
+.topbar .eyebrow {
+  color: #f6c343;
+}
+
+.topbar h1 {
+  color: #fff;
+  font-weight: 900;
+}
+
+.topbar-meta {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.topbar-meta strong {
+  color: #fff;
+}
+
+@media (max-width: 560px) {
+  .brand-lockup {
+    align-items: flex-start;
+  }
+
+  .brand-logo {
+    width: 132px;
+    height: 42px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+  }
+
+  .topbar-meta {
+    width: 100%;
   }
 }

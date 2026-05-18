@@ -17,7 +17,7 @@ const recordGroups = [
   ],
   ["02. Projeto Vinculado", ["idFiotec", "metaProjeto", "coordenador", "setorFiocruz"]],
   [
-    "03. Informacoes do Viajante",
+    "03. Informações do Viajante",
     [
       "nomeCompleto",
       "dataNascimento",
@@ -29,7 +29,7 @@ const recordGroups = [
     ],
   ],
   [
-    "04. Informacoes da Solicitacao",
+    "04. Informações da Solicitação",
     [
       "necessidade",
       "localOrigem",
@@ -45,7 +45,7 @@ const recordGroups = [
   ],
 ];
 
-export function RecordCard({ item, onDelete }) {
+export function RecordCard({ item, onDelete, onStatusChange, statusOptions = [] }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -53,13 +53,25 @@ export function RecordCard({ item, onDelete }) {
       <div className="record-card-header">
         <div>
           <span className="record-id">{item.id}</span>
-          <h4>{item.nomeCompleto || item.nomeEvento || "Solicitacao sem nome"}</h4>
+          <h4>{item.nomeCompleto || item.nomeEvento || "Solicitação sem nome"}</h4>
           <small>
             {createdAtDisplay(item)}
             {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
           </small>
         </div>
-        <span className="status-pill">{item.status || "Recebida"}</span>
+        <label className="record-status-control">
+          <span>Status</span>
+          <select
+            value={item.status || "Recebida"}
+            onChange={(event) => onStatusChange?.(item, event.target.value)}
+          >
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           type="button"
           className="record-toggle"

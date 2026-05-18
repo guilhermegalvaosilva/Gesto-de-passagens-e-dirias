@@ -1,4 +1,4 @@
-export const linkedProjects = [
+﻿export const linkedProjects = [
   {
     idFiotec: "GEREB-005-FEX-20",
     projetoId: "2.362",
@@ -227,34 +227,34 @@ export const requestFields = [
 ];
 
 export const labels = {
-  createdAt: "Data de Envio",
+  createdAt: "Data de envio",
   status: "Status",
-  descricaoSolicitacao: "Descricao da Solicitacao",
-  nomeEvento: "Nome do Evento",
-  dataEvento: "Data do Evento",
-  localEvento: "Local do Evento",
+  descricaoSolicitacao: "Descrição da solicitação",
+  nomeEvento: "Nome do evento",
+  dataEvento: "Data do evento",
+  localEvento: "Local do evento",
   justificativa: "Justificativa",
   idFiotec: "ID FIOTEC",
-  metaProjeto: "Meta do Projeto",
+  metaProjeto: "Meta do projeto",
   coordenador: "Coordenador",
   setorFiocruz: "Setor Fiocruz",
-  nomeCompleto: "Nome Completo",
-  dataNascimento: "Data de Nascimento",
-  cargoFuncao: "Cargo/Funcao",
+  nomeCompleto: "Nome completo",
+  dataNascimento: "Data de nascimento",
+  cargoFuncao: "Cargo/Função",
   cpf: "CPF",
   banco: "Banco",
-  agencia: "Agencia",
-  contaCorrente: "Conta Corrente",
+  agencia: "Agência",
+  contaCorrente: "Conta corrente",
   necessidade: "Necessidade",
-  localOrigem: "Local de Origem",
-  dataIda: "Data de Ida",
-  horarioIda: "Horario de Ida",
-  vooIda: "Voo de Ida",
-  localDestino: "Local de Destino",
-  dataVolta: "Data de Volta",
-  horarioVolta: "Horario de Volta",
-  necessarioValorMaximoDiaria: "Necessario Valor Maximo Diaria",
-  valorMaximoDiaria: "Valor Maximo Diaria",
+  localOrigem: "Local de origem",
+  dataIda: "Data de ida",
+  horarioIda: "Horário de ida",
+  vooIda: "Voo de ida",
+  localDestino: "Local de destino",
+  dataVolta: "Data de volta",
+  horarioVolta: "Horário de volta",
+  necessarioValorMaximoDiaria: "Necessário valor máximo para diária",
+  valorMaximoDiaria: "Valor máximo da diária",
 };
 
 export const auditColumns = [
@@ -297,3 +297,4 @@ export const blankForm = {
   necessarioValorMaximoDiaria: "",
   valorMaximoDiaria: "",
 };
+

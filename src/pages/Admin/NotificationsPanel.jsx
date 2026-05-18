@@ -6,10 +6,10 @@ export function NotificationsPanel({ logs }) {
       <div className="dashboard-card notification-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Notificacoes</span>
-            <h3>Atualizacoes para todos os usuarios</h3>
+            <span className="section-kicker">Notificações</span>
+            <h3>Atualizações para todos os usuários</h3>
             <p className="table-note">
-              Toda criacao ou edicao de formulario aparece aqui.
+              Toda criação ou edição de formulário aparece aqui.
             </p>
           </div>
         </div>
@@ -30,7 +30,7 @@ export function NotificationsPanel({ logs }) {
               </article>
             ))
           ) : (
-            <div className="empty-records">Ainda nao ha notificacoes.</div>
+            <div className="empty-records">Ainda não há notificações.</div>
           )}
         </div>
       </div>

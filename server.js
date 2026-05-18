@@ -8,6 +8,7 @@ import {
   randomUUID,
   timingSafeEqual,
 } from "node:crypto";
+import { linkedProjects } from "./src/data/formData.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,45 @@ const DATA_DIR = path.join(ROOT_DIR, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const DEFAULT_ADMIN_PASSWORD = "123456";
+const MAX_BODY_SIZE_BYTES = 1024 * 1024;
+const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_RATE_LIMIT_ATTEMPTS = 12;
+const loginAttempts = new Map();
+
+const REQUEST_STATUS_OPTIONS = [
+  "Recebida",
+  "Em análise",
+  "Pendente",
+  "Aprovada",
+  "Concluída",
+  "Cancelada",
+];
+
+const REQUIRED_REQUEST_FIELDS = [
+  "descricaoSolicitacao",
+  "nomeEvento",
+  "dataEvento",
+  "localEvento",
+  "justificativa",
+  "idFiotec",
+  "metaProjeto",
+  "coordenador",
+  "setorFiocruz",
+  "nomeCompleto",
+  "dataNascimento",
+  "cargoFuncao",
+  "cpf",
+  "banco",
+  "agencia",
+  "contaCorrente",
+  "necessidade",
+  "localOrigem",
+  "dataIda",
+  "horarioIda",
+  "localDestino",
+  "dataVolta",
+  "horarioVolta",
+];
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -55,6 +95,67 @@ function sendText(res, status, text) {
     "Content-Type": "text/plain; charset=utf-8",
   });
   res.end(text);
+}
+
+class ApiError extends Error {
+  constructor(statusCode, message, details = []) {
+    super(message);
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function normalizedFilterText(value) {
+  return normalizeText(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function digitsOnly(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function parseMoneyValue(value) {
+  const normalized = String(value || "")
+    .replace(/[^\d,.-]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const number = Number(normalized);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+function dateValue(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isValidDateInput(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) && Boolean(dateValue(value));
+}
+
+function daysUntil(value) {
+  const date = dateValue(value);
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return Math.ceil((date.getTime() - today.getTime()) / 86400000);
+}
+
+function normalizeStatus(status) {
+  return REQUEST_STATUS_OPTIONS.includes(status) ? status : "Recebida";
+}
+
+function findLinkedProject(idFiotec) {
+  const id = normalizeText(idFiotec).toUpperCase();
+  return linkedProjects.find((project) => project.idFiotec.toUpperCase() === id);
 }
 
 function normalizeLogin(value) {
@@ -117,7 +218,15 @@ async function ensureDb() {
 async function readDb() {
   await ensureDb();
   const raw = await fs.readFile(DB_PATH, "utf8");
-  const db = JSON.parse(raw || "{}");
+  let db;
+  try {
+    db = JSON.parse(raw || "{}");
+  } catch {
+    const backupPath = `${DB_PATH}.corrompido-${Date.now()}.bak`;
+    await fs.writeFile(backupPath, raw);
+    db = defaultDb();
+    await writeDb(db);
+  }
   db.solicitacoes = Array.isArray(db.solicitacoes) ? db.solicitacoes : [];
   db.alteracoes = Array.isArray(db.alteracoes) ? db.alteracoes : [];
   db.admins =
@@ -147,7 +256,9 @@ async function readDb() {
 
 async function writeDb(db) {
   await ensureDb();
-  await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2));
+  const tempPath = `${DB_PATH}.tmp`;
+  await fs.writeFile(tempPath, JSON.stringify(db, null, 2));
+  await fs.rename(tempPath, DB_PATH);
 }
 
 function publicAdmin(admin) {
@@ -194,6 +305,22 @@ async function requireAuth(req, res) {
   return { db, user, session };
 }
 
+async function optionalAuth(req) {
+  const token = bearerToken(req);
+  if (!token) return null;
+  const db = await readDb();
+  const session = db.sessions.find(
+    (item) => item.token === token && Number(item.expiresAt || 0) > Date.now(),
+  );
+  const user = session
+    ? db.admins.find(
+        (admin) => normalizeLogin(admin.login) === normalizeLogin(session.login),
+      )
+    : null;
+  return user && session ? { db, user, session } : null;
+}
+
+
 function collectionNameFromUrl(pathname) {
   if (pathname.startsWith("/api/solicitacoes")) return "solicitacoes";
   if (pathname.startsWith("/api/alteracoes")) return "alteracoes";
@@ -212,14 +339,181 @@ function sortRows(rows, query) {
 
 async function readBody(req) {
   const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > MAX_BODY_SIZE_BYTES) {
+      throw new ApiError(413, "Payload muito grande.");
+    }
+    chunks.push(chunk);
+  }
   if (!chunks.length) return {};
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw new ApiError(400, "JSON inválido no corpo da requisição.");
+  }
 }
 
 function requestIdFromPath(pathname, prefix) {
   const id = pathname.slice(prefix.length).replace(/^\/+/, "");
   return id ? decodeURIComponent(id) : "";
+}
+
+function assertLoginAllowed(req) {
+  const key = req.socket.remoteAddress || "local";
+  const now = Date.now();
+  const attempts = (loginAttempts.get(key) || []).filter(
+    (timestamp) => now - timestamp < LOGIN_RATE_LIMIT_WINDOW_MS,
+  );
+  if (attempts.length >= LOGIN_RATE_LIMIT_ATTEMPTS) {
+    throw new ApiError(
+      429,
+      "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
+    );
+  }
+  attempts.push(now);
+  loginAttempts.set(key, attempts);
+}
+
+function clearLoginAttempts(req) {
+  loginAttempts.delete(req.socket.remoteAddress || "local");
+}
+
+function validateRequestPayload(row) {
+  const errors = [];
+  const missing = REQUIRED_REQUEST_FIELDS.filter((field) => !normalizeText(row[field]));
+  if (missing.length) {
+    errors.push(`Campos obrigatórios ausentes: ${missing.join(", ")}.`);
+  }
+
+  if (digitsOnly(row.cpf).length !== 11) {
+    errors.push("CPF precisa ter 11 números.");
+  }
+
+  ["dataEvento", "dataNascimento", "dataIda", "dataVolta"].forEach((field) => {
+    if (row[field] && !isValidDateInput(row[field])) {
+      errors.push(`Data inválida em ${field}.`);
+    }
+  });
+
+  if (row.dataIda && row.dataVolta && row.dataVolta < row.dataIda) {
+    errors.push("A data de volta não pode ser anterior à data de ida.");
+  }
+
+  if (row.dataEvento && row.dataIda && row.dataEvento < row.dataIda) {
+    errors.push("A data do evento não pode ser anterior à data de ida.");
+  }
+
+  if (!findLinkedProject(row.idFiotec)) {
+    errors.push("ID FIOTEC não localizado na lista de projetos.");
+  }
+
+  if (row.status && !REQUEST_STATUS_OPTIONS.includes(row.status)) {
+    errors.push(`Status inválido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
+  }
+
+  if (
+    normalizedFilterText(row.necessarioValorMaximoDiaria) === "sim" &&
+    parseMoneyValue(row.valorMaximoDiaria) === 0
+  ) {
+    errors.push("Informe o valor máximo da diária quando o campo 25 estiver marcado como SIM.");
+  }
+
+  if (errors.length) {
+    throw new ApiError(422, "Revise os dados da solicitação.", errors);
+  }
+}
+
+function enrichRequestPayload(row, previous) {
+  const now = new Date();
+  const project = findLinkedProject(row.idFiotec);
+  return {
+    ...row,
+    status: normalizeStatus(row.status),
+    createdAt: previous?.createdAt || row.createdAt || now.toISOString(),
+    createdAtIso: previous?.createdAtIso || row.createdAtIso || row.createdAt || now.toISOString(),
+    createdAtClient:
+      previous?.createdAtClient || row.createdAtClient || now.toLocaleString("pt-BR"),
+    updatedAt: previous ? now.toISOString() : row.updatedAt || "",
+    updatedAtClient: previous ? now.toLocaleString("pt-BR") : row.updatedAtClient || "",
+    metaProjeto: project?.projetoId || row.metaProjeto,
+    coordenador: project?.coordenador || row.coordenador,
+    setorFiocruz: project?.setorFiocruz || row.setorFiocruz,
+    projetoVinculado: project || row.projetoVinculado,
+  };
+}
+
+function buildStatusAudit(previous, next, authContext) {
+  if (!previous || previous.status === next.status) return null;
+  const now = new Date();
+  const id = `ALT-${now.toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID()
+    .slice(0, 8)
+    .toUpperCase()}`;
+  return {
+    id,
+    titulo: next.nomeCompleto || next.nomeEvento || "Solicitação sem título",
+    idAlteracao: id,
+    idChamado: next.id,
+    tipoAlteracao: "ALTERAÇÃO DE STATUS",
+    motivoAlteracao: "Status atualizado no painel administrativo",
+    dataAlteracao: now.toISOString(),
+    dataAlteracaoClient: now.toLocaleString("pt-BR"),
+    campoAlterado: "Status",
+    alteradoPor: authContext?.user?.login || "sistema",
+    valorOriginal: previous.status || "Recebida",
+    valorNovo: next.status || "Recebida",
+    origem: "Backend",
+    observacao: "Registro automático gerado pela API.",
+  };
+}
+
+function countBy(rows, getter) {
+  return rows.reduce((acc, item) => {
+    const key = normalizeText(getter(item)) || "Não informado";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function dashboardSummary(rows) {
+  const today = new Date().toDateString();
+  const total = rows.length;
+  const todayRequests = rows.filter((item) => {
+    const created = dateValue(item.createdAtIso || item.createdAt);
+    return created && created.toDateString() === today;
+  });
+  const missingFlight = rows.filter(
+    (item) =>
+      normalizedFilterText(item.necessidade).includes("passagens") &&
+      !normalizeText(item.vooIda),
+  );
+  const missingDailyValue = rows.filter(
+    (item) =>
+      normalizedFilterText(item.necessarioValorMaximoDiaria) === "sim" &&
+      parseMoneyValue(item.valorMaximoDiaria) === 0,
+  );
+  const pendingIssues = missingFlight.length + missingDailyValue.length;
+  const nextEventDays = rows
+    .map((item) => daysUntil(item.dataEvento))
+    .filter((value) => value !== null && value >= 0)
+    .sort((a, b) => a - b)[0];
+
+  return {
+    total,
+    today: todayRequests.length,
+    readiness: total ? Math.max(0, 100 - Math.round((pendingIssues / total) * 100)) : 100,
+    pendingIssues,
+    nextEventDays: nextEventDays ?? null,
+    status: countBy(rows, (item) => item.status || "Recebida"),
+    necessidades: countBy(rows, (item) => item.necessidade),
+    setores: countBy(rows, (item) => item.setorFiocruz),
+    alertas: {
+      passagensSemVoo: missingFlight.length,
+      diariasSemValor: missingDailyValue.length,
+      semSetor: rows.filter((item) => !normalizeText(item.setorFiocruz)).length,
+    },
+  };
 }
 
 async function handleApi(req, res, url) {
@@ -235,6 +529,7 @@ async function handleApi(req, res, url) {
   }
 
   if (url.pathname === "/api/auth/login" && req.method === "POST") {
+    assertLoginAllowed(req);
     const body = await readBody(req);
     const db = await readDb();
     const user = db.admins.find(
@@ -248,6 +543,7 @@ async function handleApi(req, res, url) {
     }
 
     const session = createSession(user.login);
+    clearLoginAttempts(req);
     db.sessions.push(session);
     await writeDb(db);
     sendJson(res, 200, {
@@ -311,6 +607,13 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (url.pathname === "/api/dashboard/resumo" && req.method === "GET") {
+    const authContext = await requireAuth(req, res);
+    if (!authContext) return;
+    sendJson(res, 200, { data: dashboardSummary(authContext.db.solicitacoes) });
+    return;
+  }
+
   const collection = collectionNameFromUrl(url.pathname);
   if (!collection) {
     sendJson(res, 404, { error: "Rota nao encontrada." });
@@ -344,8 +647,26 @@ async function handleApi(req, res, url) {
   if ((req.method === "POST" && !id) || (req.method === "PUT" && id)) {
     const body = await readBody(req);
     const rowId = id || body.id || randomUUID();
-    const row = { ...body, id: rowId };
+    let row = { ...body, id: rowId };
     const index = db[collection].findIndex((item) => String(item.id) === String(rowId));
+
+    if (collection === "solicitacoes") {
+      validateRequestPayload(row);
+      const previous = index >= 0 ? db[collection][index] : null;
+      row = enrichRequestPayload(row, previous);
+      const authContext = await optionalAuth(req);
+      const statusAudit = buildStatusAudit(previous, row, authContext);
+      if (statusAudit) db.alteracoes.unshift(statusAudit);
+    }
+
+    if (collection === "alteracoes") {
+      row = {
+        ...row,
+        dataAlteracao: row.dataAlteracao || new Date().toISOString(),
+        dataAlteracaoClient: row.dataAlteracaoClient || new Date().toLocaleString("pt-BR"),
+      };
+    }
+
     if (index >= 0) db[collection][index] = row;
     else db[collection].push(row);
     await writeDb(db);
@@ -419,7 +740,15 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith("/api/")) await handleApi(req, res, url);
     else await serveStatic(req, res, url);
   } catch (error) {
-    sendJson(res, 500, { error: error.message || "Erro interno." });
+    if (error instanceof ApiError) {
+      sendJson(res, error.statusCode, {
+        error: error.message,
+        ...(error.details?.length ? { details: error.details } : {}),
+      });
+      return;
+    }
+    console.error(error);
+    sendJson(res, 500, { error: "Erro interno do servidor." });
   }
 });
 

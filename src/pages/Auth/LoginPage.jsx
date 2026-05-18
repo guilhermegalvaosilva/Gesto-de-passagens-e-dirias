@@ -22,14 +22,19 @@ export function LoginPage({ onBack, onLogin }) {
   }
 
   return (
-    <section className="card login-card">
-      <div className="section-heading compact-heading">
+    <section className="card login-card command-login">
+      <div className="login-orbit" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="section-heading compact-heading login-heading">
         <div>
-          <span className="section-kicker">Acesso restrito</span>
-          <h2>Login Administrativo</h2>
+          <span className="section-kicker">Fiocruz Brasília | NUGB</span>
+          <h2>Acesso administrativo</h2>
           <p className="subtitle">
-            Use um usuario administrativo para acessar relatorios, alteracoes,
-            exclusoes e exportacoes.
+            Entre para acompanhar fila, auditoria, financeiro, voos e
+            exportações da operação.
           </p>
         </div>
         <button className="btn btn-ghost" type="button" onClick={onBack}>
@@ -37,6 +42,10 @@ export function LoginPage({ onBack, onLogin }) {
         </button>
       </div>
       <form className="auth-panel simple-login" onSubmit={submit}>
+        <div className="login-access-chip">
+          <span />
+          Ambiente restrito
+        </div>
         <div className="form-group full">
           <label>Login</label>
           <input

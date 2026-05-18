@@ -22,7 +22,7 @@ export function findLinkedProject(idFiotec) {
 export function buildRequestObject(form, existingRequest) {
   const now = new Date();
   const project = findLinkedProject(form.idFiotec);
-  if (!project) throw new Error("Projeto nao localizado. Confira o ID FIOTEC.");
+  if (!project) throw new Error("Projeto não localizado. Confira o ID FIOTEC.");
 
   const data = { ...form };
   Object.keys(data).forEach((key) => {
@@ -47,7 +47,7 @@ function auditTitle(data) {
   return (
     normalizeText(data.nomeCompleto) ||
     normalizeText(data.nomeEvento) ||
-    "Solicitacao sem titulo"
+    "Solicitação sem título"
   );
 }
 
@@ -59,16 +59,16 @@ function buildAuditEntry(data, overrides = {}) {
     titulo: auditTitle(data),
     idAlteracao: id,
     idChamado: data.id,
-    tipoAlteracao: "EDICAO",
-    motivoAlteracao: "Formulario atualizado",
+    tipoAlteracao: "EDIÇÃO",
+    motivoAlteracao: "Formulário atualizado",
     dataAlteracao: now.toISOString(),
     dataAlteracaoClient: now.toLocaleString("pt-BR"),
     campoAlterado: "-",
-    alteradoPor: savedSession().login || "usuario do formulario",
+    alteradoPor: savedSession().login || "usuário do formulário",
     valorOriginal: "-",
     valorNovo: "-",
-    origem: "Formulario",
-    observacao: "Registro automatico do sistema.",
+    origem: "Formulário",
+    observacao: "Registro automático do sistema.",
     ...overrides,
   };
 }
@@ -76,13 +76,13 @@ function buildAuditEntry(data, overrides = {}) {
 export function buildCreationAudit(data) {
   return [
     buildAuditEntry(data, {
-      tipoAlteracao: "CRIACAO",
-      motivoAlteracao: "Novo formulario enviado",
-      campoAlterado: "Formulario",
+      tipoAlteracao: "CRIAÇÃO",
+      motivoAlteracao: "Novo formulário enviado",
+      campoAlterado: "Formulário",
       valorNovo: data.status || "Recebida",
-      origem: "Formulario publico",
+      origem: "Formulário público",
       observacao:
-        "Nova solicitacao disponivel para todos os usuarios administrativos.",
+        "Nova solicitação disponível para todos os usuários administrativos.",
     }),
   ];
 }
@@ -111,8 +111,8 @@ export function buildChangeAuditLogs(previous, next) {
         campoAlterado: labels[field] || field,
         valorOriginal: displayValue(field, previous),
         valorNovo: displayValue(field, next),
-        origem: "Edicao de formulario",
-        observacao: "Alteracao registrada automaticamente ao salvar a edicao.",
+        origem: "Edição de formulário",
+        observacao: "Alteração registrada automaticamente ao salvar a edição.",
       }),
     );
 }
