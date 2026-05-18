@@ -24,6 +24,15 @@ const FIREBASE_CONFIG_PATH =
   path.join(ROOT_DIR, "js", "firebase-config.js");
 const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || "(default)";
 const DATA_COLLECTIONS = ["solicitacoes", "alteracoes", "admins", "sessions"];
+const FIRESTORE_COLLECTION_NAMES = {
+  solicitacoes:
+    process.env.FIRESTORE_SOLICITACOES_COLLECTION ||
+    "solicitacoes_passagens_diarias",
+  alteracoes:
+    process.env.FIRESTORE_ALTERACOES_COLLECTION || "alteracoes_solicitacoes",
+  admins: process.env.FIRESTORE_ADMINS_COLLECTION || "admins",
+  sessions: process.env.FIRESTORE_SESSIONS_COLLECTION || "sessions",
+};
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const DEFAULT_ADMIN_PASSWORD = "123456";
 const MAX_BODY_SIZE_BYTES = 1024 * 1024;
@@ -269,6 +278,10 @@ function firestoreBaseUrl(config) {
   )}/databases/${encodeURIComponent(FIRESTORE_DATABASE_ID)}/documents`;
 }
 
+function firestoreCollectionName(collection) {
+  return FIRESTORE_COLLECTION_NAMES[collection] || collection;
+}
+
 async function firestoreRequest(config, method, documentPath = "", body, params = {}) {
   const query = new URLSearchParams({
     key: config.apiKey,
@@ -366,13 +379,14 @@ function documentIdForRow(collection, row) {
 
 function createFirestoreStore(config) {
   async function readCollection(collection) {
+    const firestoreCollection = firestoreCollectionName(collection);
     const rows = [];
     let pageToken = "";
     do {
       const payload = await firestoreRequest(
         config,
         "GET",
-        firestoreDocumentPath(collection),
+        firestoreDocumentPath(firestoreCollection),
         null,
         {
           pageSize: "1000",
@@ -391,21 +405,23 @@ function createFirestoreStore(config) {
   }
 
   async function writeDocument(collection, row) {
+    const firestoreCollection = firestoreCollectionName(collection);
     const id = documentIdForRow(collection, row);
     await firestoreRequest(
       config,
       "PATCH",
-      firestoreDocumentPath(collection, id),
+      firestoreDocumentPath(firestoreCollection, id),
       { fields: toFirestoreFields({ ...row, id }) },
     );
   }
 
   async function deleteDocument(collection, id) {
+    const firestoreCollection = firestoreCollectionName(collection);
     try {
       await firestoreRequest(
         config,
         "DELETE",
-        firestoreDocumentPath(collection, id),
+        firestoreDocumentPath(firestoreCollection, id),
       );
     } catch (error) {
       if (error.status !== 404) throw error;
@@ -415,6 +431,7 @@ function createFirestoreStore(config) {
   return {
     mode: "firestore",
     projectId: config.projectId,
+    collections: FIRESTORE_COLLECTION_NAMES,
     async ping() {
       await readCollection("admins");
     },
@@ -553,6 +570,7 @@ function dataStoreInfo() {
   return {
     database: store?.mode || "inicializando",
     projectId: store?.projectId || "",
+    collections: store?.collections || {},
     warning: dataStoreState?.warning || "",
   };
 }
@@ -979,7 +997,7 @@ async function handleApi(req, res, url) {
     if (index >= 0) db[collection][index] = row;
     else db[collection].push(row);
     await writeDb(db);
-    sendJson(res, index >= 0 ? 200 : 201, { data: row });
+    sendJson(res, index >= 0 ? 200 : 201, { data: row, ...dataStoreInfo() });
     return;
   }
 

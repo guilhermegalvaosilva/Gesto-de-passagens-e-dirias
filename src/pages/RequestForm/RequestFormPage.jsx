@@ -119,7 +119,7 @@ export function RequestFormPage({ onBack }) {
         ? buildChangeAuditLogs(editing, data)
         : buildCreationAudit(data);
 
-      await apiRequest(`/solicitacoes/${encodeURIComponent(data.id)}`, {
+      const savedRequest = await apiRequest(`/solicitacoes/${encodeURIComponent(data.id)}`, {
         method: "PUT",
         body: JSON.stringify(data),
       });
@@ -139,6 +139,12 @@ export function RequestFormPage({ onBack }) {
           ? `Solicitação atualizada com sucesso. ${auditLogs.length} alteração(ões) registrada(s).`
           : `Solicitação enviada com sucesso. ID: ${data.id}`,
       });
+      if (!editing && savedRequest.database === "firestore") {
+        setMessage({
+          type: "success",
+          text: `Solicitacao enviada com sucesso. ID: ${data.id} | Firebase confirmado`,
+        });
+      }
       setForm(blankForm);
       setEditing(null);
       setEditId("");

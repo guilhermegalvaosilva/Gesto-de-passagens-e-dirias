@@ -29,8 +29,8 @@ Se o Firestore estiver acessivel e com regras permitindo leitura/gravacao, as
 colecoes usadas sao:
 
 ```text
-solicitacoes
-alteracoes
+solicitacoes_passagens_diarias
+alteracoes_solicitacoes
 admins
 sessions
 ```
