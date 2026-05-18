@@ -1,9 +1,13 @@
-# React + Vite
+# Gestao de passagens e diarias
 
-## Rodar com Docker
+Aplicacao React + Vite com backend Node.js no mesmo repositorio. O backend serve a API em `/api` e tambem entrega o frontend compilado em `dist/`.
+
+## Rodar localmente
 
 ```bash
-docker compose up --build
+npm install
+npm run build
+npm start
 ```
 
 Acesse:
@@ -18,19 +22,41 @@ Login inicial:
 admin / 123456
 ```
 
-Os dados do backend ficam persistidos no volume `nugb-gereb-data`.
+## Desenvolvimento
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Para mexer no frontend com recarregamento automatico, rode dois terminais:
 
-Currently, two official plugins are available:
+```bash
+npm run dev:api
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm run dev
+```
 
-## React Compiler
+O Vite abre o frontend e redireciona as chamadas `/api` para `http://localhost:3002`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Rodar com Docker
 
-## Expanding the ESLint configuration
+```bash
+docker compose up --build
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Acesse:
+
+```text
+http://localhost:3002
+```
+
+Os dados ficam persistidos no volume `nugb-gereb-data`.
+
+## Deploy usando o link do GitHub
+
+Em plataformas como Render, Railway ou similares, conecte o repositorio pelo link do GitHub e use:
+
+```text
+Build command: npm install && npm run build
+Start command: npm start
+```
+
+Configure a porta pelo ambiente da plataforma, se ela fornecer a variavel `PORT`. O servidor usa `PORT` automaticamente e, se ela nao existir, usa `3002`.
