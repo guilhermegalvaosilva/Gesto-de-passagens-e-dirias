@@ -6,15 +6,24 @@ import { AdminPage } from "./pages/Admin/AdminPage";
 import { LoginPage } from "./pages/Auth/LoginPage";
 import { HomePage } from "./pages/Home/HomePage";
 import { RequestFormPage } from "./pages/RequestForm/RequestFormPage";
-import { apiRequest } from "./services/api";
-import { removeStorage } from "./services/storage";
+import { apiRequest, validateSession } from "./services/api";
+import { readJSON, removeStorage } from "./services/storage";
+
+const publicPages = new Set(["home", "form", "login"]);
+
+function savedPage() {
+  const value = window.localStorage.getItem(STORAGE_KEYS.activePage);
+  return ["home", "form", "login", "admin"].includes(value) ? value : "home";
+}
 
 function App() {
-  const [page, setPageState] = useState("home");
+  const [page, setPageState] = useState(savedPage);
+  const [sessionReady, setSessionReady] = useState(false);
   const [storageMode, setStorageMode] = useState("Conectando ao backend");
 
   const setPage = useCallback((next) => {
     setPageState(next);
+    window.localStorage.setItem(STORAGE_KEYS.activePage, next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
@@ -23,7 +32,20 @@ function App() {
   }, [setPage]);
 
   useEffect(() => {
-    removeStorage(STORAGE_KEYS.activePage);
+    let active = true;
+    validateSession()
+      .then((user) => {
+        if (!active) return;
+        const storedPage = savedPage();
+        if (!user && !publicPages.has(storedPage)) {
+          setPageState("login");
+          window.localStorage.setItem(STORAGE_KEYS.activePage, "login");
+        }
+      })
+      .finally(() => {
+        if (active) setSessionReady(true);
+      });
+
     apiRequest("/health")
       .then((payload) => {
         if (payload.database === "firestore") {
@@ -37,6 +59,10 @@ function App() {
         setStorageMode("Backend conectado");
       })
       .catch(() => setStorageMode("Backend indisponivel"));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -47,6 +73,17 @@ function App() {
     window.addEventListener("load-form-edit", handler);
     return () => window.removeEventListener("load-form-edit", handler);
   }, [setPage]);
+
+  if (!sessionReady && readJSON(STORAGE_KEYS.session, {}).token) {
+    return (
+      <>
+        <Topbar />
+        <main>
+          <section className="card loading-card">Validando sessao...</section>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>

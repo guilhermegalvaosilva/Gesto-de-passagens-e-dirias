@@ -1,4 +1,4 @@
-import http from "node:http";
+﻿import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,7 +34,8 @@ const FIRESTORE_COLLECTION_NAMES = {
   sessions: process.env.FIRESTORE_SESSIONS_COLLECTION || "sessions",
 };
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
-const DEFAULT_ADMIN_PASSWORD = "123456";
+const DEFAULT_ADMIN_LOGIN = process.env.DEFAULT_ADMIN_LOGIN || "admin";
+const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || "123456";
 const MAX_BODY_SIZE_BYTES = 1024 * 1024;
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_RATE_LIMIT_ATTEMPTS = 12;
@@ -97,8 +98,18 @@ function corsHeaders() {
   };
 }
 
+function securityHeaders() {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "same-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  };
+}
+
 function sendJson(res, status, payload) {
   res.writeHead(status, {
+    ...securityHeaders(),
     ...corsHeaders(),
     "Content-Type": "application/json; charset=utf-8",
   });
@@ -107,6 +118,7 @@ function sendJson(res, status, payload) {
 
 function sendText(res, status, text) {
   res.writeHead(status, {
+    ...securityHeaders(),
     ...corsHeaders(),
     "Content-Type": "text/plain; charset=utf-8",
   });
@@ -217,7 +229,7 @@ function defaultDb() {
   return {
     solicitacoes: [],
     alteracoes: [],
-    admins: [createAdminRecord("admin", DEFAULT_ADMIN_PASSWORD, "padrao")],
+    admins: [createAdminRecord(DEFAULT_ADMIN_LOGIN, DEFAULT_ADMIN_PASSWORD, "padrao")],
     sessions: [],
   };
 }
@@ -477,7 +489,9 @@ function normalizeDb(db) {
     changed = true;
   }
   if (!Array.isArray(next.admins) || !next.admins.length) {
-    next.admins = [createAdminRecord("admin", DEFAULT_ADMIN_PASSWORD, "padrao")];
+    next.admins = [
+      createAdminRecord(DEFAULT_ADMIN_LOGIN, DEFAULT_ADMIN_PASSWORD, "padrao"),
+    ];
     changed = true;
   }
   if (!Array.isArray(next.sessions)) {
@@ -679,7 +693,7 @@ async function readBody(req) {
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
-    throw new ApiError(400, "JSON inválido no corpo da requisição.");
+    throw new ApiError(400, "JSON invÃ¡lido no corpo da requisiÃ§Ã£o.");
   }
 }
 
@@ -712,44 +726,44 @@ function validateRequestPayload(row) {
   const errors = [];
   const missing = REQUIRED_REQUEST_FIELDS.filter((field) => !normalizeText(row[field]));
   if (missing.length) {
-    errors.push(`Campos obrigatórios ausentes: ${missing.join(", ")}.`);
+    errors.push(`Campos obrigatÃ³rios ausentes: ${missing.join(", ")}.`);
   }
 
   if (digitsOnly(row.cpf).length !== 11) {
-    errors.push("CPF precisa ter 11 números.");
+    errors.push("CPF precisa ter 11 nÃºmeros.");
   }
 
   ["dataEvento", "dataNascimento", "dataIda", "dataVolta"].forEach((field) => {
     if (row[field] && !isValidDateInput(row[field])) {
-      errors.push(`Data inválida em ${field}.`);
+      errors.push(`Data invÃ¡lida em ${field}.`);
     }
   });
 
   if (row.dataIda && row.dataVolta && row.dataVolta < row.dataIda) {
-    errors.push("A data de volta não pode ser anterior à data de ida.");
+    errors.push("A data de volta nÃ£o pode ser anterior Ã  data de ida.");
   }
 
   if (row.dataEvento && row.dataIda && row.dataEvento < row.dataIda) {
-    errors.push("A data do evento não pode ser anterior à data de ida.");
+    errors.push("A data do evento nÃ£o pode ser anterior Ã  data de ida.");
   }
 
   if (!findLinkedProject(row.idFiotec)) {
-    errors.push("ID FIOTEC não localizado na lista de projetos.");
+    errors.push("ID FIOTEC nÃ£o localizado na lista de projetos.");
   }
 
   if (row.status && !REQUEST_STATUS_OPTIONS.includes(row.status)) {
-    errors.push(`Status inválido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
+    errors.push(`Status invÃ¡lido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
   }
 
   if (
     normalizedFilterText(row.necessarioValorMaximoDiaria) === "sim" &&
     parseMoneyValue(row.valorMaximoDiaria) === 0
   ) {
-    errors.push("Informe o valor máximo da diária quando o campo 25 estiver marcado como SIM.");
+    errors.push("Informe o valor mÃ¡ximo da diÃ¡ria quando o campo 25 estiver marcado como SIM.");
   }
 
   if (errors.length) {
-    throw new ApiError(422, "Revise os dados da solicitação.", errors);
+    throw new ApiError(422, "Revise os dados da solicitaÃ§Ã£o.", errors);
   }
 }
 
@@ -780,10 +794,10 @@ function buildStatusAudit(previous, next, authContext) {
     .toUpperCase()}`;
   return {
     id,
-    titulo: next.nomeCompleto || next.nomeEvento || "Solicitação sem título",
+    titulo: next.nomeCompleto || next.nomeEvento || "SolicitaÃ§Ã£o sem tÃ­tulo",
     idAlteracao: id,
     idChamado: next.id,
-    tipoAlteracao: "ALTERAÇÃO DE STATUS",
+    tipoAlteracao: "ALTERAÃ‡ÃƒO DE STATUS",
     motivoAlteracao: "Status atualizado no painel administrativo",
     dataAlteracao: now.toISOString(),
     dataAlteracaoClient: now.toLocaleString("pt-BR"),
@@ -792,13 +806,13 @@ function buildStatusAudit(previous, next, authContext) {
     valorOriginal: previous.status || "Recebida",
     valorNovo: next.status || "Recebida",
     origem: "Backend",
-    observacao: "Registro automático gerado pela API.",
+    observacao: "Registro automÃ¡tico gerado pela API.",
   };
 }
 
 function countBy(rows, getter) {
   return rows.reduce((acc, item) => {
-    const key = normalizeText(getter(item)) || "Não informado";
+    const key = normalizeText(getter(item)) || "NÃ£o informado";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
@@ -1029,6 +1043,7 @@ async function tryServeFile(res, filePath) {
   try {
     const content = await fs.readFile(filePath);
     res.writeHead(200, {
+      ...securityHeaders(),
       ...corsHeaders(),
       "Content-Type":
         mimeTypes[path.extname(filePath).toLowerCase()] ||

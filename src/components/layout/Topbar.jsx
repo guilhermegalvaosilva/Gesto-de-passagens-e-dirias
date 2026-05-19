@@ -5,16 +5,16 @@ export function Topbar() {
     <header className="topbar">
       <div className="brand-lockup">
         <span className="brand-mark brand-logo">
-          <img src={logo} alt="Fiocruz Brasília" />
+          <img src={logo} alt="Fiocruz Brasilia" />
         </span>
         <div>
-          <span className="eyebrow">Fiocruz Brasília | NUGB</span>
-          <h1>Viagens Institucionais</h1>
+          <span className="eyebrow">NUGB</span>
+          <h1>Passagens e diarias</h1>
         </div>
       </div>
       <div className="topbar-meta">
-        <span>Central NUGB</span>
-        <strong>Passagens e diárias</strong>
+        <span>Sistema online</span>
+        <strong>Firebase + API</strong>
       </div>
     </header>
   );

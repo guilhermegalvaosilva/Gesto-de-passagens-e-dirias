@@ -9,3 +9,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: FIREBASE_LOCAL_FALLBACK
+        value: false

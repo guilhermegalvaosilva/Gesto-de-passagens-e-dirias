@@ -1,0 +1,272 @@
+:root {
+  --primary: #111111;
+  --primary-dark: #000000;
+  --primary-light: #333333;
+  --accent: #000000;
+  --accent-soft: #f3f3f3;
+  --bg: #f6f6f6;
+  --surface: #ffffff;
+  --surface-soft: #f8f8f8;
+  --text: #111111;
+  --muted: #666666;
+  --border: #e5e5e5;
+  --border-strong: #cfcfcf;
+  --danger: #111111;
+  --success-bg: #f3f3f3;
+  --success-text: #111111;
+  --warning-bg: #f3f3f3;
+  --warning-text: #111111;
+  --error-bg: #f3f3f3;
+  --error-text: #111111;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+}
+
+body {
+  background: #f6f6f6;
+  color: #111111;
+}
+
+body::before,
+.hero-copy::before,
+.hero-copy::after,
+.login-orbit,
+.sidebar-window-dots,
+.route-map,
+.route-line,
+.node,
+.kpi-orb {
+  display: none !important;
+}
+
+main {
+  max-width: 1320px;
+  margin-top: 20px;
+}
+
+.topbar {
+  min-height: 72px;
+  padding-block: 14px;
+  color: #111111;
+  border-bottom: 1px solid #e5e5e5;
+  background: #ffffff;
+}
+
+.brand-logo {
+  width: 150px;
+  height: 44px;
+  border: 1px solid #e5e5e5;
+  box-shadow: none;
+}
+
+.topbar .eyebrow,
+.eyebrow,
+.badge,
+.section-kicker {
+  color: #666666;
+  letter-spacing: 0;
+}
+
+.topbar h1,
+h1,
+h2,
+h3,
+h4 {
+  color: #111111;
+}
+
+.topbar-meta,
+.hero-inline-status,
+.card,
+.landing-card,
+.dashboard-card,
+.admin-table-panel,
+.chart-card,
+.kpi-card,
+.insight-card,
+.record-card,
+.dashboard-sidebar,
+.admin-session-card {
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: none;
+}
+
+.topbar-meta {
+  min-width: 180px;
+  text-align: right;
+}
+
+.topbar-meta strong {
+  color: #111111;
+}
+
+.landing-card {
+  max-width: 1040px;
+}
+
+.launchpad-card {
+  background: #ffffff;
+  color: #111111;
+}
+
+.premium-hero {
+  display: block;
+  min-height: auto;
+}
+
+.hero-copy {
+  padding: clamp(32px, 7vw, 76px);
+}
+
+.hero-copy .badge {
+  color: #666666;
+}
+
+.hero-copy h2 {
+  max-width: 720px;
+  color: #111111;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1;
+}
+
+.hero-copy p {
+  max-width: 620px;
+  color: #555555;
+  font-size: 17px;
+}
+
+.choice-buttons .btn-secondary,
+.btn-secondary,
+.btn-ghost,
+button.btn-secondary,
+button.btn-ghost {
+  background: #ffffff;
+  border-color: #111111;
+  color: #111111;
+}
+
+button,
+.btn,
+.btn-admin,
+.btn-danger {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+button:hover,
+.btn:hover,
+.btn-admin:hover,
+.btn-secondary:hover,
+.btn-ghost:hover {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  box-shadow: none;
+  transform: none;
+}
+
+input,
+textarea,
+select {
+  border-color: #d4d4d4;
+  background: #ffffff;
+  color: #111111;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-shell {
+  gap: 18px;
+}
+
+.dashboard-sidebar {
+  background: #111111;
+  color: #ffffff;
+}
+
+.admin-dashboard .sidebar-logo,
+.admin-dashboard .sidebar-nav,
+.admin-dashboard .sidebar-action-group {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.admin-dashboard .sidebar-logo > span:last-child,
+.admin-dashboard .sidebar-nav button,
+.admin-dashboard .sidebar-action-group button {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-dashboard .sidebar-logo small {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.admin-dashboard .sidebar-nav button {
+  grid-template-columns: 1fr;
+  border: 0;
+  background: transparent;
+}
+
+.admin-dashboard .sidebar-nav button:hover,
+.admin-dashboard .sidebar-nav button.active,
+.admin-dashboard .sidebar-action-group button:hover {
+  background: #ffffff;
+  color: #111111;
+}
+
+.dashboard-header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.kpi-grid,
+.dashboard-summary-grid,
+.insight-grid,
+.analytics-grid {
+  gap: 14px;
+}
+
+.kpi-card strong,
+.insight-card strong {
+  color: #111111;
+}
+
+.record-card-header,
+.record-actions,
+.panel-heading,
+.queue-toolbar {
+  border-color: #e5e5e5;
+}
+
+.record-toggle::before,
+.record-toggle::after {
+  background: #111111;
+}
+
+.status-dot,
+.hero-inline-status span {
+  background: #111111;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .topbar,
+  .dashboard-header,
+  .dashboard-header-meta {
+    display: grid;
+  }
+
+  .topbar-meta {
+    width: 100%;
+    text-align: left;
+  }
+}

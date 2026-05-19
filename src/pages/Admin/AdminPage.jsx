@@ -4,7 +4,7 @@ import { Message } from "../../components/common/Message";
 import { REQUESTS_PAGE_SIZE } from "../../config/appConfig";
 import { REQUEST_STATUS_OPTIONS } from "../../config/requestStatus";
 import { STORAGE_KEYS } from "../../config/storageKeys";
-import { apiRequest, logoutAdmin, savedSession } from "../../services/api";
+import { apiRequest, logoutAdmin, savedSession, validateSession } from "../../services/api";
 import { exportRequestsWorkbook } from "../../utils/excel";
 import { isToday, normalizedFilterText } from "../../utils/formatters";
 import { AdminSidebar } from "./AdminSidebar";
@@ -28,9 +28,11 @@ export function AdminPage({ onBack }) {
   const [sectorFilter, setSectorFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       const [requestsPayload, auditPayload] = await Promise.all([
         apiRequest("/solicitacoes?sort=createdAt&order=desc"),
         apiRequest("/alteracoes?sort=dataAlteracao&order=desc"),
@@ -43,6 +45,8 @@ export function AdminPage({ onBack }) {
         type: "error",
         text: error.message || "Erro ao carregar painel.",
       });
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -51,8 +55,14 @@ export function AdminPage({ onBack }) {
   }, [activeTab]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadData);
-  }, [loadData]);
+    validateSession().then((user) => {
+      if (!user) {
+        onBack();
+        return;
+      }
+      void loadData();
+    });
+  }, [loadData, onBack]);
 
   const filteredRequests = useMemo(() => {
     let rows = search
@@ -167,6 +177,7 @@ export function AdminPage({ onBack }) {
             </div>
           </div>
           <Message message={message} />
+          {loading && <div className="empty-records">Carregando dados...</div>}
           {activeTab === "dashboard" && <Dashboard requests={requests} />}
           {activeTab === "solicitacoes" && (
             <RequestsPanel

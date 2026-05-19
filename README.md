@@ -1,6 +1,7 @@
 # Gestao de passagens e diarias
 
-Aplicacao React + Vite com backend Node.js no mesmo repositorio. O backend serve a API em `/api` e tambem entrega o frontend compilado em `dist/`.
+Aplicacao React + Vite com backend Node.js. O backend entrega o frontend e a API
+no mesmo link publico.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/guilhermegalvaosilva/Gesto-de-passagens-e-dirias)
 
@@ -26,25 +27,8 @@ admin / 123456
 
 ## Banco de dados
 
-O backend tenta conectar ao Firebase Firestore usando `js/firebase-config.js`.
-Se o Firestore estiver acessivel e com regras permitindo leitura/gravacao, as
-colecoes usadas sao:
-
-```text
-solicitacoes_passagens_diarias
-alteracoes_solicitacoes
-admins
-sessions
-```
-
-Se a conexao com o Firebase falhar, o backend usa `data/db.json` como fallback
-local. Para impedir esse fallback em producao, configure:
-
-```text
-FIREBASE_LOCAL_FALLBACK=false
-```
-
-Tambem e possivel sobrescrever a configuracao por variaveis de ambiente:
+O backend conecta ao Firebase Firestore usando `js/firebase-config.js` ou
+variaveis de ambiente:
 
 ```text
 FIREBASE_API_KEY
@@ -53,9 +37,47 @@ FIREBASE_AUTH_DOMAIN
 FIREBASE_APP_ID
 ```
 
+Colecoes usadas:
+
+```text
+solicitacoes_passagens_diarias
+alteracoes_solicitacoes
+admins
+sessions
+```
+
+Em producao, o `render.yaml` usa:
+
+```text
+FIREBASE_LOCAL_FALLBACK=false
+```
+
+Assim o deploy so fica ativo quando o Firebase estiver acessivel.
+
+## Deploy pelo GitHub
+
+1. Suba o projeto para o GitHub.
+2. Abra o botao "Deploy to Render" acima.
+3. Confirme a criacao do Web Service.
+4. Aguarde o build terminar.
+
+O Render gera um link unico com frontend e backend, por exemplo:
+
+```text
+https://gestao-passagens-diarias.onrender.com
+```
+
+Comandos usados pelo deploy:
+
+```text
+Build command: npm ci && npm run build
+Start command: npm start
+Health check: /api/health
+```
+
 ## Desenvolvimento
 
-Para mexer no frontend com recarregamento automatico, rode dois terminais:
+Para editar o frontend com recarregamento automatico, rode dois terminais:
 
 ```bash
 npm run dev:api
@@ -65,59 +87,4 @@ npm run dev:api
 npm run dev
 ```
 
-O Vite abre o frontend e redireciona as chamadas `/api` para `http://localhost:3002`.
-
-## Rodar com Docker
-
-```bash
-docker compose up --build
-```
-
-Acesse:
-
-```text
-http://localhost:3002
-```
-
-Os dados ficam persistidos no volume `nugb-gereb-data`.
-
-## Deploy usando o link do GitHub
-
-Em plataformas como Render, Railway ou similares, conecte o repositorio pelo link do GitHub e use:
-
-```text
-Build command: npm install && npm run build
-Start command: npm start
-```
-
-Configure a porta pelo ambiente da plataforma, se ela fornecer a variavel `PORT`. O servidor usa `PORT` automaticamente e, se ela nao existir, usa `3002`.
-
-## Link pelo GitHub Pages
-
-Este repositorio ja inclui o workflow `.github/workflows/pages.yml` para gerar
-um link pelo GitHub Pages a cada push na branch `main`.
-
-No GitHub, abra:
-
-```text
-Settings > Pages > Build and deployment > Source > GitHub Actions
-```
-
-Depois rode o workflow `Deploy GitHub Pages` ou faca um novo push para `main`.
-O link ficara parecido com:
-
-```text
-https://guilhermegalvaosilva.github.io/Gesto-de-passagens-e-dirias/
-```
-
-Observacao: GitHub Pages publica apenas o frontend. Neste projeto, quando o app
-abre em `github.io` sem uma variavel `VITE_API_BASE` configurada, ele usa o
-Firebase Firestore direto no navegador. Por isso o link do Pages funciona mesmo
-sem um backend Node publicado.
-
-Se preferir usar um backend publicado em Render/Railway, crie no GitHub a
-variavel `VITE_API_BASE` apontando para a API publicada, por exemplo:
-
-```text
-https://seu-backend.onrender.com/api
-```
+O Vite redireciona `/api` para `http://localhost:3002`.
