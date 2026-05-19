@@ -94,7 +94,7 @@ function DonutChart({ title, value, total, caption, tone = "primary" }) {
         <text x="56" y="53" textAnchor="middle">{ratio}%</text>
         <text x="56" y="68" textAnchor="middle">{value}/{total}</text>
       </svg>
-      <div>
+      <div className="donut-copy">
         <h4>{title}</h4>
         <p>{caption}</p>
       </div>

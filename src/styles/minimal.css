@@ -829,3 +829,72 @@ select:focus,
   background: #fff;
   color: #151515;
 }
+
+.dashboard-grid-primary {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-donut-grid {
+  grid-template-columns: repeat(3, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.donut-card {
+  min-height: 138px;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.donut-chart {
+  width: 82px;
+  height: 82px;
+}
+
+.donut-track,
+.donut-value {
+  stroke-width: 13;
+}
+
+.donut-chart text:first-of-type {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.donut-chart text:last-of-type {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.donut-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.donut-card h4 {
+  max-width: 11rem;
+  margin: 0;
+  color: #111;
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  line-height: 1.16;
+}
+
+.donut-card p {
+  max-width: 13rem;
+  margin: 0;
+  color: #55534f;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-donut-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .donut-card {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}
