@@ -13,10 +13,11 @@ export function FormSection({ number, title, accent, children }) {
 export function Input({ label, name, value, setField, full, required, ...props }) {
   return (
     <div className={`form-group ${full ? "full" : ""}`}>
-      <label>
+      <label htmlFor={name}>
         {label} {required && <span className="required">*</span>}
       </label>
       <input
+        id={name}
         name={name}
         value={value || ""}
         onChange={(event) => setField(name, event.target.value)}
@@ -30,10 +31,11 @@ export function Input({ label, name, value, setField, full, required, ...props }
 export function TextArea({ label, name, value, setField, full, required }) {
   return (
     <div className={`form-group ${full ? "full" : ""}`}>
-      <label>
+      <label htmlFor={name}>
         {label} {required && <span className="required">*</span>}
       </label>
       <textarea
+        id={name}
         name={name}
         value={value || ""}
         onChange={(event) => setField(name, event.target.value)}
@@ -46,10 +48,11 @@ export function TextArea({ label, name, value, setField, full, required }) {
 export function Select({ label, name, value, setField, options, required }) {
   return (
     <div className="form-group">
-      <label>
+      <label htmlFor={name}>
         {label} {required && <span className="required">*</span>}
       </label>
       <select
+        id={name}
         name={name}
         value={value || ""}
         onChange={(event) => setField(name, event.target.value)}

@@ -20,7 +20,6 @@ export function RequestsPanel({
   totalPages,
   setPage,
   onDelete,
-  onStatusChange,
 }) {
   function clearFilters() {
     setSearch("");
@@ -42,9 +41,10 @@ export function RequestsPanel({
             </div>
           </div>
           <div className="search-row">
-            <label className="search-label">
+            <label className="search-label" htmlFor="requests-search">
               <span>Pesquisar solicitações</span>
               <input
+                id="requests-search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Digite para filtrar..."
@@ -71,9 +71,9 @@ export function RequestsPanel({
             </div>
           </div>
           <div className="queue-toolbar">
-            <label>
+            <label htmlFor="status-filter">
               <span>Status</span>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              <select id="status-filter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">Todos</option>
                 {statusOptions.map((status) => (
                   <option key={status} value={status}>
@@ -82,25 +82,25 @@ export function RequestsPanel({
                 ))}
               </select>
             </label>
-            <label>
+            <label htmlFor="date-filter">
               <span>Período</span>
-              <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
+              <select id="date-filter" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
                 <option value="all">Todas</option>
                 <option value="today">Hoje</option>
               </select>
             </label>
-            <label>
+            <label htmlFor="need-filter">
               <span>Necessidade</span>
-              <select value={needFilter} onChange={(event) => setNeedFilter(event.target.value)}>
+              <select id="need-filter" value={needFilter} onChange={(event) => setNeedFilter(event.target.value)}>
                 <option value="all">Todas</option>
                 <option value="Passagens">Passagens</option>
                 <option value="Diárias">Diárias</option>
                 <option value="Passagens e Diárias">Passagens e Diárias</option>
               </select>
             </label>
-            <label>
+            <label htmlFor="sector-filter">
               <span>Setor</span>
-              <select value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)}>
+              <select id="sector-filter" value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)}>
                 <option value="all">Todos</option>
                 {sectorOptions.map((sector) => (
                   <option key={sector} value={sector}>
@@ -121,13 +121,7 @@ export function RequestsPanel({
           <div className="records-list">
             {rows.length ? (
               rows.map((item) => (
-                <RecordCard
-                  key={item.id}
-                  item={item}
-                  onDelete={onDelete}
-                  onStatusChange={onStatusChange}
-                  statusOptions={statusOptions}
-                />
+                <RecordCard key={item.id} item={item} onDelete={onDelete} />
               ))
             ) : (
               <div className="empty-records">Nenhuma solicitação encontrada.</div>

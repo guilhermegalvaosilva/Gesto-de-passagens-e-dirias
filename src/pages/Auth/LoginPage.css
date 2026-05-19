@@ -4,94 +4,59 @@
 }
 
 .command-login {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.75fr);
   gap: 0;
   overflow: hidden;
   padding: 0;
-  border-color: rgba(255, 255, 255, 0.16);
-  background: #101417;
-  color: #fff;
+  border-top: 4px solid var(--primary);
+  background: #fff;
 }
 
 .login-orbit {
-  position: absolute;
-  inset: auto auto -130px -110px;
-  width: 360px;
-  height: 360px;
-  border: 1px solid rgba(45, 212, 191, 0.18);
-  border-radius: 50%;
-}
-
-.login-orbit span {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.login-orbit span:nth-child(1) {
-  inset: 50px;
-  border: 1px solid rgba(183, 243, 106, 0.16);
-}
-
-.login-orbit span:nth-child(2) {
-  width: 16px;
-  height: 16px;
-  right: 54px;
-  top: 98px;
-  background: #2dd4bf;
-}
-
-.login-orbit span:nth-child(3) {
-  width: 10px;
-  height: 10px;
-  left: 92px;
-  top: 42px;
-  background: #f2b84b;
+  display: none;
 }
 
 .login-heading {
-  position: relative;
   display: grid;
   align-content: center;
-  min-height: 460px;
+  min-height: 420px;
   margin: 0;
-  padding: clamp(34px, 5vw, 60px);
+  padding: clamp(30px, 5vw, 54px);
   border: 0;
+  border-right: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(0, 84, 166, 0.08), transparent 56%),
+    var(--surface-soft);
 }
 
 .login-heading h2 {
-  max-width: 420px;
-  color: #fff;
-  font-size: clamp(36px, 5vw, 62px);
-  line-height: 0.98;
+  max-width: 430px;
+  margin-top: 8px;
+  color: var(--primary-dark);
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.06;
 }
 
 .login-heading .subtitle {
   max-width: 430px;
-  color: rgba(255, 255, 255, 0.68);
+  margin-top: 14px;
 }
 
 .login-heading .btn-ghost {
-  position: absolute;
-  left: clamp(34px, 5vw, 60px);
-  bottom: clamp(28px, 4vw, 44px);
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  width: fit-content;
+  margin-top: 26px;
 }
 
 .auth-panel {
   display: grid;
   align-content: center;
   gap: 16px;
-  min-height: 460px;
-  margin: 12px;
+  min-height: 420px;
+  margin: 0;
   padding: clamp(22px, 3vw, 34px);
-  border: 1px solid rgba(221, 228, 220, 0.92);
-  border-radius: 8px;
   background: #fff;
-  color: var(--text);
 }
 
 .login-access-chip {
@@ -102,17 +67,17 @@
   margin-bottom: 4px;
   padding: 7px 10px;
   border-radius: 999px;
-  background: #e8fbf7;
-  color: #107366;
+  background: var(--primary-soft);
+  color: var(--primary);
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .login-access-chip span {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: #2dd4bf;
+  border-radius: 999px;
+  background: var(--accent);
 }
 
 .login-card .actions {
@@ -122,7 +87,7 @@
 
 .login-card .actions button {
   width: 100%;
-  min-height: 50px;
+  min-height: 48px;
 }
 
 @media (max-width: 820px) {
@@ -130,68 +95,23 @@
     grid-template-columns: 1fr;
   }
 
-  .login-heading,
+  .login-heading {
+    min-height: 300px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
   .auth-panel {
     min-height: 0;
   }
 
-  .login-heading .btn-ghost {
-    position: static;
-    width: fit-content;
-    margin-top: 24px;
+  .login-heading h2 {
+    font-size: 2.15rem;
   }
 }
 
-/* Fiocruz admin access */
-.command-login {
-  border-color: rgba(215, 228, 238, 0.96);
-  background:
-    linear-gradient(135deg, #0054a6, #003b79);
-}
-
-.login-orbit {
-  border-color: rgba(246, 195, 67, 0.2);
-  border-radius: 8px;
-  transform: rotate(12deg);
-}
-
-.login-orbit span:nth-child(1) {
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-.login-orbit span:nth-child(2) {
-  background: #f6c343;
-}
-
-.login-orbit span:nth-child(3) {
-  background: #fff;
-}
-
-.login-heading h2 {
-  color: #fff;
-  line-height: 1.02;
-}
-
-.login-heading .subtitle {
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.login-heading .btn-ghost {
-  border-color: rgba(255, 255, 255, 0.26);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
-
-.auth-panel {
-  border-color: #d7e4ee;
-  background: #fff;
-}
-
-.login-access-chip {
-  background: #edf6fc;
-  color: var(--primary);
-}
-
-.login-access-chip span {
-  background: #f6c343;
+@media (max-width: 560px) {
+  .login-heading h2 {
+    font-size: 1.9rem;
+  }
 }

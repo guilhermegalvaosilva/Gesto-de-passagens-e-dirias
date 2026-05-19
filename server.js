@@ -1096,6 +1096,18 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(
+      `Porta ${PORT} ja esta em uso. Feche o outro backend ou rode com outra porta: PORT=3003 npm run server`,
+    );
+    process.exit(1);
+  }
+
+  console.error("Erro ao iniciar o servidor:", error);
+  process.exit(1);
+});
+
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor NUGB rodando em http://localhost:${PORT}`);
 });

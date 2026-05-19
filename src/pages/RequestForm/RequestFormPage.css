@@ -1,5 +1,5 @@
 .form-card {
-  max-width: 1240px;
+  max-width: 1180px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -7,68 +7,114 @@
 .journey-form-card {
   overflow: hidden;
   padding: 0;
-  background: #f8faf6;
+  border-top: 4px solid var(--primary);
+  background: var(--surface-soft);
 }
 
 .form-hero-heading {
   margin: 0;
-  padding: clamp(28px, 4vw, 46px);
+  padding: clamp(28px, 4vw, 44px);
   border: 0;
-  background:
-    radial-gradient(circle at 85% 18%, rgba(183, 243, 106, 0.24), transparent 24%),
-    linear-gradient(135deg, #101417, #1d2a28);
-  color: #fff;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
 }
 
 .form-hero-heading h2 {
   max-width: 760px;
-  color: #fff;
-  font-size: clamp(34px, 4.4vw, 58px);
-  line-height: 1;
+  color: var(--primary-dark);
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .form-hero-heading .subtitle {
   max-width: 720px;
-  color: rgba(255, 255, 255, 0.68);
-}
-
-.form-hero-heading .btn-ghost {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  margin-top: 10px;
 }
 
 .form-progress-lane {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  padding: 1px;
-  background: #dce5dc;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
 }
 
 .form-progress-lane span {
-  min-height: 46px;
+  min-height: 42px;
   display: grid;
   place-items: center;
-  background: #fff;
-  color: #54615d;
+  border-right: 1px solid var(--border);
+  color: var(--primary-dark);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
+}
+
+.form-progress-lane span:last-child {
+  border-right: 0;
 }
 
 .form-card form {
   display: grid;
-  gap: 18px;
-  padding: clamp(18px, 2.4vw, 28px);
+  gap: 16px;
+  padding: clamp(18px, 2.4vw, 26px);
+}
+
+.form-status-panel {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-status-panel > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.form-status-panel span,
+.project-summary-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.form-status-panel strong,
+.project-summary-card strong {
+  color: var(--primary-dark);
+}
+
+.form-status-panel small,
+.project-summary-card small {
+  color: var(--muted);
+}
+
+.form-progress-bar {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8f0f6;
+}
+
+.form-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), #5ca8d6);
 }
 
 .form-section {
   position: relative;
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 210px minmax(0, 1fr);
   gap: 22px;
-  padding: 22px;
+  padding: 20px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
@@ -76,10 +122,13 @@
 }
 
 .accent-section {
-  border-color: rgba(45, 212, 191, 0.34);
-  background:
-    linear-gradient(90deg, rgba(45, 212, 191, 0.08), transparent 36%),
-    #fff;
+  border-left: 4px solid var(--accent);
+  background: linear-gradient(90deg, rgba(246, 195, 67, 0.08), #fff 32%);
+}
+
+.edit-lookup-section {
+  grid-template-columns: 210px minmax(0, 1fr);
+  background: linear-gradient(90deg, rgba(0, 84, 166, 0.06), #fff 34%);
 }
 
 .form-section h3 {
@@ -87,29 +136,28 @@
   top: 14px;
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: 10px;
   margin: 0;
-  padding: 0;
-  border: 0;
-  color: #101417;
-  font-size: 20px;
+  color: var(--primary-dark);
+  font-size: 1.05rem;
+  font-weight: 800;
 }
 
 .form-section h3 span {
   display: inline-grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
-  background: #101417;
-  color: #b7f36a;
+  background: var(--primary);
+  color: #fff;
   font-size: 12px;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 20px;
+  gap: 16px 18px;
   align-items: start;
 }
 
@@ -117,17 +165,17 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .form-group label,
 .search-label span {
-  min-height: 24px;
+  min-height: 22px;
   display: flex;
   align-items: flex-end;
-  color: #26302e;
+  color: var(--primary-dark);
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   line-height: 1.35;
 }
 
@@ -143,38 +191,44 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  min-height: 46px;
-  overflow: hidden;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: #fff;
-  transition:
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-
-.money-field:focus-within {
-  border-color: var(--primary-light);
-  box-shadow: 0 0 0 4px rgba(18, 165, 148, 0.13);
-}
-
-.money-field input {
   min-height: 44px;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
 }
 
 .form-actions {
+  position: sticky;
+  bottom: 12px;
+  z-index: 4;
+  align-items: center;
   justify-content: flex-end;
-  padding-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-md);
 }
 
-.edit-lookup-section {
-  grid-template-columns: 220px minmax(0, 1fr);
-  background:
-    linear-gradient(135deg, rgba(242, 184, 75, 0.12), transparent 40%),
-    #fff;
+.form-actions > div {
+  display: grid;
+  gap: 2px;
+  margin-right: auto;
+}
+
+.form-actions strong {
+  color: var(--primary-dark);
+}
+
+.form-actions small {
+  color: var(--muted);
+}
+
+.project-summary-card {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  background: #fffdf6;
 }
 
 .edit-lookup-row {
@@ -205,7 +259,13 @@
     grid-template-columns: 1fr;
   }
 
+  .form-progress-lane span {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
   .form-actions {
+    position: static;
     justify-content: stretch;
   }
 
@@ -213,79 +273,12 @@
   .edit-lookup-row > button {
     width: 100%;
   }
-}
 
-/* Fiocruz request form */
-.journey-form-card {
-  background: #f6f9fc;
-  border-color: rgba(215, 228, 238, 0.96);
-}
+  .form-actions > div {
+    margin-right: 0;
+  }
 
-.form-hero-heading {
-  background:
-    linear-gradient(135deg, rgba(0, 84, 166, 0.96), rgba(0, 59, 121, 0.98)),
-    linear-gradient(90deg, rgba(246, 195, 67, 0.22), transparent);
-}
-
-.form-hero-heading h2 {
-  color: #fff;
-  line-height: 1.04;
-}
-
-.form-hero-heading .subtitle {
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.form-hero-heading .btn-ghost {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
-
-.form-progress-lane {
-  background: #cfe0ee;
-}
-
-.form-progress-lane span {
-  background: #fff;
-  color: var(--primary-dark);
-}
-
-.form-section {
-  border-color: #d7e4ee;
-  background: #fff;
-  border-left: 5px solid var(--primary);
-}
-
-.accent-section {
-  border-color: rgba(246, 195, 67, 0.52);
-  border-left-color: var(--accent);
-  background:
-    linear-gradient(90deg, rgba(246, 195, 67, 0.12), transparent 36%),
-    #fff;
-}
-
-.form-section h3 {
-  color: var(--primary-dark);
-}
-
-.form-section h3 span {
-  background: var(--primary);
-  color: #fff;
-}
-
-.form-group label,
-.search-label span {
-  color: var(--primary-dark);
-}
-
-.money-field:focus-within {
-  border-color: var(--primary-light);
-  box-shadow: 0 0 0 4px rgba(0, 114, 188, 0.14);
-}
-
-.edit-lookup-section {
-  background:
-    linear-gradient(135deg, rgba(0, 84, 166, 0.08), transparent 42%),
-    #fff;
+  .form-hero-heading h2 {
+    font-size: 1.9rem;
+  }
 }

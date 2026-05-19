@@ -38,12 +38,15 @@ export function displayValue(key, item) {
 }
 
 export function formatCurrency(value) {
-  const number = Number(
-    String(value || "")
-      .replace(/[^\d,.-]/g, "")
-      .replace(/\./g, "")
-      .replace(",", "."),
-  );
+  const number =
+    typeof value === "number"
+      ? value
+      : Number(
+          String(value || "")
+            .replace(/[^\d,.-]/g, "")
+            .replace(/\./g, "")
+            .replace(",", "."),
+        );
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",

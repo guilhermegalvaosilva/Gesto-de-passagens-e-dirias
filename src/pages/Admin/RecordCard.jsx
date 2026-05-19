@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { labels } from "../../data/formData";
-import { createdAtDisplay, displayValue } from "../../utils/formatters";
+import { createdAtDisplay, displayValue, formatDate } from "../../utils/formatters";
 import { generatePDF } from "../../utils/pdf";
 
 const recordGroups = [
@@ -45,33 +45,28 @@ const recordGroups = [
   ],
 ];
 
-export function RecordCard({ item, onDelete, onStatusChange, statusOptions = [] }) {
+export function RecordCard({ item, onDelete }) {
   const [expanded, setExpanded] = useState(false);
+  const title = item.nomeCompleto || item.nomeEvento || "Solicitação sem nome";
+  const route =
+    item.localOrigem || item.localDestino
+      ? `${item.localOrigem || "-"} → ${item.localDestino || "-"}`
+      : "Rota não informada";
 
   return (
     <article className={`record-card ${expanded ? "expanded" : ""}`}>
       <div className="record-card-header">
-        <div>
-          <span className="record-id">{item.id}</span>
-          <h4>{item.nomeCompleto || item.nomeEvento || "Solicitação sem nome"}</h4>
+        <div className="record-main">
+          <div className="record-title-row">
+            <span className="record-id">{item.id}</span>
+            <span className="record-status-badge">{item.status || "Recebida"}</span>
+          </div>
+          <h4>{title}</h4>
           <small>
-            {createdAtDisplay(item)}
+            Criada em {createdAtDisplay(item)}
             {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
           </small>
         </div>
-        <label className="record-status-control">
-          <span>Status</span>
-          <select
-            value={item.status || "Recebida"}
-            onChange={(event) => onStatusChange?.(item, event.target.value)}
-          >
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </label>
         <button
           type="button"
           className="record-toggle"
@@ -80,10 +75,28 @@ export function RecordCard({ item, onDelete, onStatusChange, statusOptions = [] 
           onClick={() => setExpanded((current) => !current)}
         />
       </div>
+      <div className="record-summary-strip">
+        <div>
+          <span>Necessidade</span>
+          <strong>{item.necessidade || "-"}</strong>
+        </div>
+        <div>
+          <span>Rota</span>
+          <strong>{route}</strong>
+        </div>
+        <div>
+          <span>Ida</span>
+          <strong>{formatDate(item.dataIda) || "-"}</strong>
+        </div>
+        <div>
+          <span>Projeto</span>
+          <strong>{item.metaProjeto || item.idFiotec || "-"}</strong>
+        </div>
+      </div>
       <div className="record-card-body">
-        {recordGroups.map(([title, fields]) => (
-          <div className="record-section" key={title}>
-            <strong>{title}</strong>
+        {recordGroups.map(([groupTitle, fields]) => (
+          <div className="record-section" key={groupTitle}>
+            <strong>{groupTitle}</strong>
             <div className="record-fields">
               {fields.map((field) => (
                 <div className="record-field" key={field}>

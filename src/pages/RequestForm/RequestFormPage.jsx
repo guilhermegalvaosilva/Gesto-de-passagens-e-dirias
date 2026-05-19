@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Message } from "../../components/common/Message";
 import { FormSection, Input, Select, TextArea } from "../../components/form/FormControls";
@@ -14,6 +14,29 @@ import {
   buildRequestObject,
   findLinkedProject,
 } from "../../utils/requestBuilder";
+
+const REQUIRED_PROGRESS_FIELDS = [
+  "descricaoSolicitacao",
+  "nomeEvento",
+  "dataEvento",
+  "localEvento",
+  "justificativa",
+  "idFiotec",
+  "nomeCompleto",
+  "dataNascimento",
+  "cargoFuncao",
+  "cpf",
+  "banco",
+  "agencia",
+  "contaCorrente",
+  "necessidade",
+  "localOrigem",
+  "dataIda",
+  "horarioIda",
+  "localDestino",
+  "dataVolta",
+  "horarioVolta",
+];
 
 function digitsOnly(value) {
   return String(value || "").replace(/\D/g, "");
@@ -56,6 +79,11 @@ export function RequestFormPage({ onBack }) {
   const [message, setMessage] = useState(null);
   const banks = Array.isArray(window.BRAZILIAN_BANKS) ? window.BRAZILIAN_BANKS : [];
   const today = todayInputValue();
+  const selectedProject = useMemo(() => findLinkedProject(form.idFiotec), [form.idFiotec]);
+  const completedFields = REQUIRED_PROGRESS_FIELDS.filter((field) =>
+    digitsOnly(field === "cpf" ? form[field] : "") || String(form[field] || "").trim(),
+  ).length;
+  const progress = Math.round((completedFields / REQUIRED_PROGRESS_FIELDS.length) * 100);
 
   function setField(name, value) {
     setForm((current) => {
@@ -142,7 +170,7 @@ export function RequestFormPage({ onBack }) {
       if (!editing && savedRequest.database === "firestore") {
         setMessage({
           type: "success",
-          text: `Solicitacao enviada com sucesso. ID: ${data.id} | Firebase confirmado`,
+          text: `Solicitação enviada com sucesso. ID: ${data.id} | Firebase confirmado`,
         });
       }
       setForm(blankForm);
@@ -161,10 +189,10 @@ export function RequestFormPage({ onBack }) {
       <div className="section-heading form-hero-heading">
         <div>
           <span className="section-kicker">Fiocruz Brasília | NUGB</span>
-          <h2>Formulário de solicitação de viagem</h2>
+          <h2>Solicitação de viagem</h2>
           <p className="subtitle">
-            Preencha os dados do evento, projeto, viajante, passagens e diárias
-            para registro e conferência administrativa.
+            Preencha os dados do evento, projeto, viajante e deslocamento. Ao enviar,
+            o sistema salva o registro, gera o PDF e registra auditoria.
           </p>
         </div>
         <button className="btn btn-ghost" type="button" onClick={onBack}>
@@ -179,77 +207,98 @@ export function RequestFormPage({ onBack }) {
       </div>
 
       <form onSubmit={submit}>
+        <div className="form-status-panel" aria-label="Progresso do preenchimento">
+          <div>
+            <span>Preenchimento</span>
+            <strong>{progress}% completo</strong>
+          </div>
+          <div className="form-progress-bar" aria-hidden="true">
+            <span style={{ width: `${progress}%` }} />
+          </div>
+          <small>
+            {completedFields} de {REQUIRED_PROGRESS_FIELDS.length} campos obrigatórios preenchidos.
+          </small>
+        </div>
+
         <section className="form-section edit-lookup-section">
           <h3>
             <span>ID</span>
             Editar solicitação enviada
           </h3>
-          <div className="edit-lookup-row">
-            <label className="search-label">
-              <span>ID da solicitação</span>
-              <input
-                value={editId}
-                onChange={(event) => setEditId(event.target.value)}
-                placeholder="Ex.: SOL-20260512-ABC12345"
-              />
-            </label>
-            <button type="button" onClick={() => loadForEditById(editId)}>
-              Carregar para edição
-            </button>
-            {editing && (
-              <button
-                className="btn btn-ghost"
-                type="button"
-                onClick={() => {
-                  setEditing(null);
-                  setForm(blankForm);
-                  setEditId("");
-                }}
-              >
-                Cancelar edição
+          <div>
+            <div className="edit-lookup-row">
+              <label className="search-label">
+                <span>ID da solicitação</span>
+                <input
+                  value={editId}
+                  onChange={(event) => setEditId(event.target.value)}
+                  placeholder="Ex.: SOL-20260512-ABC12345"
+                />
+              </label>
+              <button type="button" disabled={!editId.trim()} onClick={() => loadForEditById(editId)}>
+                Carregar para edição
               </button>
-            )}
+              {editing && (
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  onClick={() => {
+                    setEditing(null);
+                    setForm(blankForm);
+                    setEditId("");
+                  }}
+                >
+                  Cancelar edição
+                </button>
+              )}
+            </div>
+            <p className="mini-note">
+              Use o ID gerado no envio para recuperar e atualizar a mesma solicitação.
+            </p>
           </div>
-          <p className="mini-note">
-            Informe o ID gerado no envio para recuperar o cadastro e atualizar os
-            dados no mesmo registro.
-          </p>
         </section>
 
-        <FormSection number="01" title="Cadastro do Evento">
-          <Input full label="1. Descrição da Solicitação" name="descricaoSolicitacao" value={form.descricaoSolicitacao} setField={setField} required />
-          <TextArea full label="2. Nome do Evento" name="nomeEvento" value={form.nomeEvento} setField={setField} required />
-          <Input label="3. Data do Evento" name="dataEvento" type="date" min={today} value={form.dataEvento} setField={setField} required />
-          <Input label="4. Local de Realizacao do Evento" name="localEvento" value={form.localEvento} setField={setField} required />
-          <TextArea full label="5. Justificativa da Solicitação" name="justificativa" value={form.justificativa} setField={setField} required />
+        <FormSection number="01" title="Cadastro do evento">
+          <Input full label="1. Descrição da solicitação" name="descricaoSolicitacao" value={form.descricaoSolicitacao} setField={setField} required />
+          <TextArea full label="2. Nome do evento" name="nomeEvento" value={form.nomeEvento} setField={setField} required />
+          <Input label="3. Data do evento" name="dataEvento" type="date" min={today} value={form.dataEvento} setField={setField} required />
+          <Input label="4. Local de realização do evento" name="localEvento" value={form.localEvento} setField={setField} required />
+          <TextArea full label="5. Justificativa da solicitação" name="justificativa" value={form.justificativa} setField={setField} required />
         </FormSection>
 
-        <FormSection number="02" title="Projeto Vinculado" accent>
-          <Input label="6. Identificacao do Projeto - ID FIOTEC" name="idFiotec" value={form.idFiotec} setField={setField} list="projectOptions" required />
-          <Input label="7. Projeto ID / Meta do Projeto" name="metaProjeto" value={form.metaProjeto} setField={setField} readOnly required />
+        <FormSection number="02" title="Projeto vinculado" accent>
+          <Input label="6. Identificação do projeto - ID FIOTEC" name="idFiotec" value={form.idFiotec} setField={setField} list="projectOptions" required />
+          <Input label="7. Projeto ID / Meta do projeto" name="metaProjeto" value={form.metaProjeto} setField={setField} readOnly required />
           <Input label="8. Coordenador" name="coordenador" value={form.coordenador} setField={setField} readOnly />
           <Input label="9. Setor Fiocruz" name="setorFiocruz" value={form.setorFiocruz} setField={setField} readOnly />
+          {selectedProject && (
+            <div className="project-summary-card full">
+              <span>Projeto selecionado</span>
+              <strong>{selectedProject.projetoId} | {selectedProject.coordenador}</strong>
+              <small>{selectedProject.setorFiocruz}</small>
+            </div>
+          )}
         </FormSection>
 
-        <FormSection number="03" title="Informações do Viajante">
-          <Input full label="10. Nome Completo" name="nomeCompleto" value={form.nomeCompleto} setField={setField} required />
-          <Input label="11. Data de Nascimento" name="dataNascimento" type="date" max={today} value={form.dataNascimento} setField={setField} required />
-          <Input label="12. Cargo / Funcao" name="cargoFuncao" value={form.cargoFuncao} setField={setField} required />
-          <Input label="13. CPF - somente numeros" name="cpf" value={form.cpf} setField={setField} maxLength="11" pattern="[0-9]{11}" required />
+        <FormSection number="03" title="Informações do viajante">
+          <Input full label="10. Nome completo" name="nomeCompleto" value={form.nomeCompleto} setField={setField} required />
+          <Input label="11. Data de nascimento" name="dataNascimento" type="date" max={today} value={form.dataNascimento} setField={setField} required />
+          <Input label="12. Cargo / Função" name="cargoFuncao" value={form.cargoFuncao} setField={setField} required />
+          <Input label="13. CPF - somente números" name="cpf" value={form.cpf} setField={setField} maxLength="11" pattern="[0-9]{11}" inputMode="numeric" required />
           <Input label="14. Banco" name="banco" value={form.banco} setField={setField} list="bankOptions" required />
-          <Input label="15. Agencia" name="agencia" value={form.agencia} setField={setField} required />
-          <Input label="16. Conta Corrente" name="contaCorrente" value={form.contaCorrente} setField={setField} required />
+          <Input label="15. Agência" name="agencia" value={form.agencia} setField={setField} required />
+          <Input label="16. Conta corrente" name="contaCorrente" value={form.contaCorrente} setField={setField} required />
         </FormSection>
 
-        <FormSection number="04" title="Informações da Solicitação">
+        <FormSection number="04" title="Informações da viagem">
           <Select label="17. Qual a necessidade?" name="necessidade" value={form.necessidade} setField={setField} options={["Passagens", "Diárias", "Passagens e Diárias"]} required />
-          <Input label="18. Local de Origem" name="localOrigem" value={form.localOrigem} setField={setField} required />
-          <Input label="19. Data de Ida" name="dataIda" type="date" min={today} value={form.dataIda} setField={setField} required />
-          <Select label="20. Horario de Ida" name="horarioIda" value={form.horarioIda} setField={setField} options={["MANHA", "TARDE", "NOITE", "INDIFERENTE"]} required />
-          <Input full label="21. Indicacao do voo de ida" name="vooIda" value={form.vooIda} setField={setField} />
-          <Input label="22. Local de Destino" name="localDestino" value={form.localDestino} setField={setField} required />
-          <Input label="23. Data de Volta" name="dataVolta" type="date" min={today} value={form.dataVolta} setField={setField} required />
-          <Select label="24. Horario de Volta" name="horarioVolta" value={form.horarioVolta} setField={setField} options={["MANHA", "TARDE", "NOITE", "INDIFERENTE"]} required />
+          <Input label="18. Local de origem" name="localOrigem" value={form.localOrigem} setField={setField} required />
+          <Input label="19. Data de ida" name="dataIda" type="date" min={today} value={form.dataIda} setField={setField} required />
+          <Select label="20. Horário de ida" name="horarioIda" value={form.horarioIda} setField={setField} options={["MANHÃ", "TARDE", "NOITE", "INDIFERENTE"]} required />
+          <Input full label="21. Indicação do voo de ida" name="vooIda" value={form.vooIda} setField={setField} />
+          <Input label="22. Local de destino" name="localDestino" value={form.localDestino} setField={setField} required />
+          <Input label="23. Data de volta" name="dataVolta" type="date" min={today} value={form.dataVolta} setField={setField} required />
+          <Select label="24. Horário de volta" name="horarioVolta" value={form.horarioVolta} setField={setField} options={["MANHÃ", "TARDE", "NOITE", "INDIFERENTE"]} required />
           <Select label="25. É necessário valor máximo para diária?" name="necessarioValorMaximoDiaria" value={form.necessarioValorMaximoDiaria} setField={setField} options={["SIM", "NÃO"]} />
           <div className="form-group">
             <label>26. Qual o valor máximo para diária total?</label>
@@ -282,6 +331,10 @@ export function RequestFormPage({ onBack }) {
         </datalist>
         <Message message={message} />
         <div className="actions form-actions">
+          <div>
+            <strong>{editing ? "Editando solicitação" : "Pronto para enviar"}</strong>
+            <small>Revise os dados antes de gerar o PDF.</small>
+          </div>
           <button type="submit">
             {editing ? "Salvar alterações e gerar PDF" : "Enviar, salvar e gerar PDF"}
           </button>
