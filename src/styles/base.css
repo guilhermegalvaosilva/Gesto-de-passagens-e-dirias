@@ -1,46 +1,44 @@
 :root {
-  --font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, sans-serif;
+  --font-family: Arial, Helvetica, sans-serif;
   --mono-family: "Monaco", "Courier New", monospace;
-  --primary: #0066cc;
-  --primary-dark: #003d7a;
-  --primary-light: #e6f0ff;
-  --primary-soft: #e8f2fb;
-  --accent: #ff6b35;
-  --accent-soft: #ffe8d6;
-  --success: #00b368;
-  --success-light: #e6f9f0;
-  --warning: #ff9500;
-  --warning-light: #fff4e6;
-  --danger: #e63946;
-  --danger-light: #ffe6e6;
-  --bg: #f5f7fa;
+  --primary: #000;
+  --primary-dark: #000;
+  --primary-light: #f5f5f5;
+  --primary-soft: #f3f3f3;
+  --accent: #000;
+  --accent-soft: #f1f1f1;
+  --success: #000;
+  --success-light: #f5f5f5;
+  --warning: #000;
+  --warning-light: #f5f5f5;
+  --danger: #000;
+  --danger-light: #f5f5f5;
+  --bg: #f6f6f6;
   --surface: #ffffff;
   --surface-soft: #f8fbfd;
   --surface-alt: #f0f4f8;
-  --text: #1a2332;
-  --text-secondary: #556575;
-  --muted: #7a8fa6;
-  --border: #d5dfe8;
-  --border-light: #e8ecf1;
-  --border-strong: #b0bfd0;
-  --success-bg: #e6f9f0;
-  --success-text: #00603f;
-  --warning-bg: #fff4e6;
-  --warning-text: #7a5a00;
-  --error-bg: #ffe6e6;
-  --error-text: #aa2e3d;
-  --shadow-xs: 0 1px 2px rgba(26, 35, 50, 0.04);
-  --shadow-sm: 0 1px 3px rgba(26, 35, 50, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 102, 204, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 102, 204, 0.12);
-  --shadow-xl: 0 20px 48px rgba(0, 102, 204, 0.16);
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --text: #090909;
+  --text-secondary: #3b3b3b;
+  --muted: #666;
+  --border: #d7d7d7;
+  --border-light: #e8e8e8;
+  --border-strong: #9b9b9b;
+  --success-bg: #f4f4f4;
+  --success-text: #111;
+  --warning-bg: #f4f4f4;
+  --warning-text: #111;
+  --error-bg: #f4f4f4;
+  --error-text: #111;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --transition: 120ms ease;
 }
 
 * {
@@ -57,7 +55,7 @@ html {
 
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 50%, #f5f7fa 100%);
+  background: #f6f6f6;
   color: var(--text);
   font-family: var(--font-family);
   font-size: 15px;
@@ -156,7 +154,7 @@ p,
   height: 9px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 0 4px rgba(246, 195, 67, 0.22);
+  box-shadow: none;
 }
 
 .home-buttons,
@@ -179,31 +177,24 @@ button,
   border: 1.5px solid transparent;
   border-radius: var(--radius-md);
   padding: 10px 18px;
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    rgba(0, 102, 204, 0.9) 100%
-  );
+  background: #000;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
   text-align: center;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.25);
+  box-shadow: none;
   transition: var(--transition);
 }
 
 button:hover,
 .btn:hover {
-  background: linear-gradient(
-    135deg,
-    var(--primary-dark) 0%,
-    rgba(0, 60, 122, 0.9) 100%
-  );
-  border-color: transparent;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+  background: #fff;
+  border-color: #000;
+  color: #000;
+  transform: none;
+  box-shadow: none;
 }
 
 button:disabled,
@@ -230,7 +221,7 @@ button.btn-ghost:hover {
   background: var(--surface-alt);
   border-color: var(--border-strong);
   color: var(--primary-dark);
-  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.1);
+  box-shadow: none;
 }
 
 .btn-danger {
@@ -285,14 +276,14 @@ input:hover,
 textarea:hover,
 select:hover {
   border-color: var(--border);
-  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.06);
+  box-shadow: none;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  box-shadow: inset 0 -2px 0 #000;
 }
 
 input[readonly],
@@ -318,15 +309,11 @@ textarea {
   padding: 14px 16px;
   border: 1.5px solid rgba(0, 179, 104, 0.3);
   border-radius: var(--radius-lg);
-  background: linear-gradient(
-    135deg,
-    rgba(230, 249, 240, 0.8) 0%,
-    rgba(230, 249, 240, 0.4) 100%
-  );
+  background: #fff;
   color: var(--success-text);
   font-weight: 600;
   font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 179, 104, 0.1);
+  box-shadow: none;
   animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -356,35 +343,23 @@ textarea {
 
 .message.warning {
   border-color: rgba(255, 149, 0, 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 244, 230, 0.8) 0%,
-    rgba(255, 244, 230, 0.4) 100%
-  );
+  background: #fff;
   color: var(--warning-text);
-  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.1);
+  box-shadow: none;
 }
 
 .message.error {
   border-color: rgba(230, 57, 70, 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 230, 230, 0.8) 0%,
-    rgba(255, 230, 230, 0.4) 100%
-  );
+  background: #fff;
   color: var(--error-text);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.1);
+  box-shadow: none;
 }
 
 .message.success {
   border-color: rgba(0, 179, 104, 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(230, 249, 240, 0.8) 0%,
-    rgba(230, 249, 240, 0.4) 100%
-  );
+  background: #fff;
   color: var(--success-text);
-  box-shadow: 0 2px 8px rgba(0, 179, 104, 0.1);
+  box-shadow: none;
 }
 
 .error {
