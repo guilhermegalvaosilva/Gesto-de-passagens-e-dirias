@@ -2,6 +2,8 @@
 
 Aplicacao React + Vite com backend Node.js no mesmo repositorio. O backend serve a API em `/api` e tambem entrega o frontend compilado em `dist/`.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/guilhermegalvaosilva/Gesto-de-passagens-e-dirias)
+
 ## Rodar localmente
 
 ```bash
