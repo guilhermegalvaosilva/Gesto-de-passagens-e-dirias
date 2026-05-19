@@ -4,14 +4,14 @@ export function HomePage({ onAdmin, onForm, storageMode }) {
       <div className="premium-hero launchpad-hero">
         <div className="hero-copy">
           <span className="badge">NUGB</span>
-          <h2>Solicitacao de passagens e diarias</h2>
+          <h2>Solicitação de passagens e diárias</h2>
           <p>
             Registre uma viagem institucional e acompanhe o fluxo pelo painel
             administrativo.
           </p>
           <div className="home-buttons choice-buttons">
             <button className="btn btn-admin" type="button" onClick={onForm}>
-              Nova solicitacao
+              Nova solicitação
             </button>
             <button className="btn btn-secondary" type="button" onClick={onAdmin}>
               Painel admin

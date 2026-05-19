@@ -6,7 +6,7 @@ import { generatePDF } from "../../utils/pdf";
 
 const recordGroups = [
   [
-    "01. Cadastro do Evento",
+    "01. Cadastro do evento",
     [
       "descricaoSolicitacao",
       "nomeEvento",
@@ -15,9 +15,9 @@ const recordGroups = [
       "justificativa",
     ],
   ],
-  ["02. Projeto Vinculado", ["idFiotec", "metaProjeto", "coordenador", "setorFiocruz"]],
+  ["02. Projeto vinculado", ["idFiotec", "metaProjeto", "coordenador", "setorFiocruz"]],
   [
-    "03. Informações do Viajante",
+    "03. Dados do viajante",
     [
       "nomeCompleto",
       "dataNascimento",
@@ -29,7 +29,7 @@ const recordGroups = [
     ],
   ],
   [
-    "04. Informações da Solicitação",
+    "04. Dados da viagem",
     [
       "necessidade",
       "localOrigem",
@@ -67,14 +67,31 @@ export function RecordCard({ item, onDelete }) {
             {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
           </small>
         </div>
-        <button
-          type="button"
-          className="record-toggle"
-          aria-label={expanded ? "Recolher detalhes" : "Ver detalhes"}
-          aria-expanded={expanded}
-          onClick={() => setExpanded((current) => !current)}
-        />
+        <div className="record-actions">
+          <button type="button" className="btn-secondary" onClick={() => generatePDF(item)}>
+            PDF
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("load-form-edit", { detail: item.id }))
+            }
+          >
+            Editar
+          </button>
+          <button type="button" className="btn-danger" onClick={() => onDelete(item.id)}>
+            Apagar
+          </button>
+          <button
+            type="button"
+            className="record-toggle"
+            aria-label={expanded ? "Recolher detalhes" : "Ver detalhes"}
+            aria-expanded={expanded}
+            onClick={() => setExpanded((current) => !current)}
+          />
+        </div>
       </div>
+
       <div className="record-summary-strip">
         <div>
           <span>Necessidade</span>
@@ -93,6 +110,7 @@ export function RecordCard({ item, onDelete }) {
           <strong>{item.metaProjeto || item.idFiotec || "-"}</strong>
         </div>
       </div>
+
       <div className="record-card-body">
         {recordGroups.map(([groupTitle, fields]) => (
           <div className="record-section" key={groupTitle}>
@@ -107,22 +125,6 @@ export function RecordCard({ item, onDelete }) {
             </div>
           </div>
         ))}
-      </div>
-      <div className="record-actions">
-        <button
-          type="button"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("load-form-edit", { detail: item.id }))
-          }
-        >
-          Editar
-        </button>
-        <button type="button" className="btn-secondary" onClick={() => generatePDF(item)}>
-          PDF
-        </button>
-        <button type="button" className="btn-danger" onClick={() => onDelete(item.id)}>
-          Apagar
-        </button>
       </div>
     </article>
   );

@@ -50,8 +50,7 @@ export function FlightsPanel({ requests }) {
             <span className="section-kicker">Logística</span>
             <h3>Mapa de voos e rotas</h3>
             <p className="table-note">
-              Acompanhe a completude das indicações de voo e as rotas mais
-              recorrentes entre as solicitações com passagens.
+              Acompanhe indicações de voo, pendências e rotas mais recorrentes.
             </p>
           </div>
           <div className="flight-completion" aria-label={`${completion}% dos voos informados`}>

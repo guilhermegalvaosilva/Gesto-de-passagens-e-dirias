@@ -34,8 +34,7 @@ export function NotificationsPanel({ logs }) {
             <span className="section-kicker">Notificações</span>
             <h3>Atualizações do sistema</h3>
             <p className="table-note">
-              Eventos recentes de criação e edição de formulários para
-              acompanhamento administrativo.
+              Eventos recentes de criação e edição de formulários para acompanhamento administrativo.
             </p>
           </div>
           <div className="notification-latest">

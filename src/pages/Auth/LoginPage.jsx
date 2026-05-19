@@ -16,7 +16,7 @@ export function LoginPage({ onBack, onLogin }) {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Login ou senha invalidos.",
+        text: error.message || "Login ou senha inválidos.",
       });
     }
   }

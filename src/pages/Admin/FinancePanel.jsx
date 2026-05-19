@@ -17,7 +17,7 @@ function percent(value, total) {
 function sumBy(rows, getter) {
   return Object.entries(
     rows.reduce((acc, item) => {
-      const key = normalizeText(getter(item)) || "Nao informado";
+      const key = normalizeText(getter(item)) || "Não informado";
       acc[key] = (acc[key] || 0) + parseMoneyValue(item.valorMaximoDiaria);
       return acc;
     }, {}),
@@ -84,48 +84,47 @@ export function FinancePanel({ requests }) {
       <div className="dashboard-card finance-dashboard-card">
         <div className="finance-hero">
           <div>
-            <span className="section-kicker">Financas</span>
-            <h3>Estimativa de diarias</h3>
+            <span className="section-kicker">Finanças</span>
+            <h3>Estimativa de diárias</h3>
             <p className="table-note">
-              Valores calculados somente a partir de solicitacoes com diaria e
-              campo valor maximo preenchido.
+              Valores calculados a partir de solicitações com diária e campo de valor preenchido.
             </p>
           </div>
           <div className="finance-total-card">
             <span>Total estimado</span>
             <strong>{formatCurrency(total)}</strong>
-            <small>{valuedRows.length} solicitacao(oes) com valor</small>
+            <small>{valuedRows.length} solicitação(ões) com valor</small>
           </div>
         </div>
 
         <div className="finance-metric-grid">
           <FinanceMetric
-            label="Media por solicitacao"
+            label="Média por solicitação"
             value={formatCurrency(average)}
-            note="Media apenas entre registros com valor."
+            note="Média apenas entre registros com valor."
             highlight
           />
           <FinanceMetric
             label="Cobertura de valores"
             value={`${coverage}%`}
-            note={`${valuedRows.length} de ${dailyRows.length} diaria(s) preenchida(s).`}
+            note={`${valuedRows.length} de ${dailyRows.length} diária(s) preenchida(s).`}
           />
           <FinanceMetric
             label="Sem valor informado"
             value={missingValue}
-            note="Diarias que precisam de complemento."
+            note="Diárias que precisam de complemento."
           />
         </div>
 
         <div className="finance-content-grid">
           <FinanceBarList
-            title="Distribuicao por setor"
+            title="Distribuição por setor"
             rows={bySector}
             total={total}
             empty="Nenhum valor por setor."
           />
           <FinanceBarList
-            title="Distribuicao por status"
+            title="Distribuição por status"
             rows={byStatus}
             total={total}
             empty="Nenhum valor por status."
@@ -148,7 +147,7 @@ export function FinancePanel({ requests }) {
                 </div>
               ))
             ) : (
-              <div className="empty-records">Nenhuma diaria com valor informado.</div>
+              <div className="empty-records">Nenhuma diária com valor informado.</div>
             )}
           </div>
         </article>

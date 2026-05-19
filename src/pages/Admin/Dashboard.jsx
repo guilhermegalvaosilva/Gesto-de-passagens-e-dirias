@@ -7,7 +7,7 @@ import {
   parseMoneyValue,
 } from "../../utils/formatters";
 
-const WORKFLOW_STATUSES = ["Recebida", "Em analise", "Pendente", "Aprovada", "Concluida"];
+const WORKFLOW_STATUSES = ["Recebida", "Em análise", "Pendente", "Aprovada", "Concluída"];
 const OPEN_STATUS_KEYS = new Set(["recebida", "em analise", "pendente"]);
 const CLOSED_STATUS_KEYS = new Set(["concluida", "cancelada"]);
 
@@ -52,7 +52,7 @@ function hasDaily(item) {
 
 function countBy(rows, getter) {
   return rows.reduce((acc, item) => {
-    const key = normalizeText(getter(item)) || "Nao informado";
+    const key = normalizeText(getter(item)) || "Não informado";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
@@ -62,6 +62,16 @@ function topEntries(rows, getter, limit = 5) {
   return Object.entries(countBy(rows, getter))
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, limit);
+}
+
+function Metric({ title, value, note }) {
+  return (
+    <article className="dashboard-metric">
+      <span>{title}</span>
+      <strong>{value}</strong>
+      <small>{note}</small>
+    </article>
+  );
 }
 
 function DonutChart({ title, value, total, caption, tone = "primary" }) {
@@ -88,16 +98,6 @@ function DonutChart({ title, value, total, caption, tone = "primary" }) {
         <h4>{title}</h4>
         <p>{caption}</p>
       </div>
-    </article>
-  );
-}
-
-function Metric({ title, value, note }) {
-  return (
-    <article className="dashboard-metric">
-      <span>{title}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
     </article>
   );
 }
@@ -133,7 +133,7 @@ function TimelineList({ rows }) {
   return (
     <article className="chart-card dashboard-chart-card">
       <div className="chart-heading">
-        <h4>Proximas viagens</h4>
+        <h4>Próximas viagens</h4>
       </div>
       <div className="dashboard-timeline">
         {rows.length ? (
@@ -194,46 +194,47 @@ export function Dashboard({ requests }) {
         <div className="dashboard-hero">
           <div>
             <span className="section-kicker">Resumo operacional</span>
-            <h3>Dashboard de solicitacoes</h3>
-            <p>
-              Visao rapida da fila, prazos, passagens e estimativa de diarias.
-            </p>
+            <h3>Dashboard de solicitações</h3>
+            <p>Visão rápida da fila, prazos, passagens e estimativa de diárias.</p>
           </div>
           <div className="dashboard-hero-number">
             <span>Total</span>
             <strong>{total}</strong>
-            <small>Ultima entrada: {last}</small>
+            <small>Última entrada: {last}</small>
           </div>
         </div>
 
         <div className="dashboard-metric-grid">
           <Metric title="Fila aberta" value={openRows.length} note={`${percent(openRows.length, total)}% em andamento`} />
           <Metric title="Passagens sem voo" value={missingFlight.length} note={`${passageRows.length} pedido(s) com passagem`} />
-          <Metric title="Diarias estimadas" value={compactCurrency(totalDaily)} note={`Media ${formatCurrency(averageDaily)}`} />
-          <Metric title="Atencoes" value={overdue.length + missingFlight.length} note="Viagens vencidas + voos pendentes" />
+          <Metric title="Diárias estimadas" value={compactCurrency(totalDaily)} note={`Média ${formatCurrency(averageDaily)}`} />
+          <Metric title="Atenções" value={overdue.length + missingFlight.length} note="Viagens vencidas + voos pendentes" />
         </div>
 
-        <div className="dashboard-donut-grid">
-          <DonutChart
-            title="Andamento"
-            value={openRows.length}
-            total={total}
-            caption={`${closedRows.length} encerrada(s) ou cancelada(s)`}
-          />
-          <DonutChart
-            title="Voos informados"
-            value={passageRows.length - missingFlight.length}
-            total={passageRows.length}
-            caption={`${missingFlight.length} passagem(ns) sem voo`}
-            tone="accent"
-          />
-          <DonutChart
-            title="Diarias com valor"
-            value={dailyRowsWithValue.length}
-            total={dailyRows.length}
-            caption={`${formatCurrency(totalDaily)} estimados`}
-            tone="soft"
-          />
+        <div className="dashboard-grid-primary">
+          <div className="dashboard-donut-grid">
+            <DonutChart
+              title="Andamento"
+              value={openRows.length}
+              total={total}
+              caption={`${closedRows.length} encerrada(s) ou cancelada(s)`}
+            />
+            <DonutChart
+              title="Voos informados"
+              value={passageRows.length - missingFlight.length}
+              total={passageRows.length}
+              caption={`${missingFlight.length} passagem(ns) sem voo`}
+              tone="accent"
+            />
+            <DonutChart
+              title="Diárias com valor"
+              value={dailyRowsWithValue.length}
+              total={dailyRows.length}
+              caption={`${formatCurrency(totalDaily)} estimados`}
+              tone="soft"
+            />
+          </div>
+          <TimelineList rows={upcoming} />
         </div>
 
         <div className="dashboard-visual-grid">
@@ -241,12 +242,8 @@ export function Dashboard({ requests }) {
             title="Status da fila"
             rows={Object.entries(statusCounts)}
             total={total}
-            empty="Nenhuma solicitacao cadastrada."
+            empty="Nenhuma solicitação cadastrada."
           />
-          <TimelineList rows={upcoming} />
-        </div>
-
-        <div className="dashboard-visual-grid">
           <BarList
             title="Setores com mais demandas"
             rows={sectorRows}

@@ -33,7 +33,7 @@ export async function apiRequest(path, options = {}) {
     });
   } catch {
     throw new Error(
-      "Backend indisponivel. Inicie o servidor com `npm run dev:api` e tente novamente.",
+      "Backend indisponível. Inicie o servidor com `npm run dev:api` e tente novamente.",
     );
   }
   const payload = await response.json().catch(() => ({}));

@@ -10,11 +10,20 @@ export function FormSection({ number, title, accent, children }) {
   );
 }
 
-export function Input({ label, name, value, setField, full, required, ...props }) {
+export function Input({
+  label,
+  name,
+  value,
+  setField,
+  full,
+  required,
+  ...props
+}) {
   return (
     <div className={`form-group ${full ? "full" : ""}`}>
       <label htmlFor={name}>
-        {label} {required && <span className="required">*</span>}
+        {label}
+        {required && <span className="required">*</span>}
       </label>
       <input
         id={name}
@@ -32,7 +41,8 @@ export function TextArea({ label, name, value, setField, full, required }) {
   return (
     <div className={`form-group ${full ? "full" : ""}`}>
       <label htmlFor={name}>
-        {label} {required && <span className="required">*</span>}
+        {label}
+        {required && <span className="required">*</span>}
       </label>
       <textarea
         id={name}
@@ -49,7 +59,8 @@ export function Select({ label, name, value, setField, options, required }) {
   return (
     <div className="form-group">
       <label htmlFor={name}>
-        {label} {required && <span className="required">*</span>}
+        {label}
+        {required && <span className="required">*</span>}
       </label>
       <select
         id={name}
@@ -58,9 +69,11 @@ export function Select({ label, name, value, setField, options, required }) {
         onChange={(event) => setField(name, event.target.value)}
         required={required}
       >
-        <option value="">Selecione</option>
+        <option value="">Selecione uma opção</option>
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option} value={option}>
+            {option}
+          </option>
         ))}
       </select>
     </div>

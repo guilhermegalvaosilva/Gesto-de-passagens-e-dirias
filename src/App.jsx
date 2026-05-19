@@ -58,7 +58,7 @@ function App() {
         }
         setStorageMode("Backend conectado");
       })
-      .catch(() => setStorageMode("Backend indisponivel"));
+      .catch(() => setStorageMode("Backend indisponível. Inicie a API para enviar solicitações."));
 
     return () => {
       active = false;
@@ -79,7 +79,7 @@ function App() {
       <>
         <Topbar />
         <main>
-          <section className="card loading-card">Validando sessao...</section>
+          <section className="card loading-card">Validando sessão...</section>
         </main>
       </>
     );

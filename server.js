@@ -570,7 +570,7 @@ async function getDataStore() {
       return firestoreStore;
     } catch (error) {
       if (process.env.FIREBASE_LOCAL_FALLBACK === "false") throw error;
-      const warning = `Firebase indisponivel (${error.message}). Usando db.json local.`;
+      const warning = `Firebase indisponível (${error.message}). Usando db.json local.`;
       console.error(warning);
       dataStoreState = { store: localJsonStore, warning };
       return localJsonStore;
@@ -633,7 +633,7 @@ async function requireAuth(req, res) {
     (item) => item.token === token && Number(item.expiresAt || 0) > Date.now(),
   );
   if (!session) {
-    sendJson(res, 401, { error: "Sessao expirada. Faca login novamente." });
+    sendJson(res, 401, { error: "Sessão expirada. Faça login novamente." });
     return null;
   }
 
@@ -641,7 +641,7 @@ async function requireAuth(req, res) {
     (admin) => normalizeLogin(admin.login) === normalizeLogin(session.login),
   );
   if (!user) {
-    sendJson(res, 401, { error: "Usuario administrativo nao encontrado." });
+    sendJson(res, 401, { error: "Usuário administrativo não encontrado." });
     return null;
   }
   return { db, user, session };
@@ -693,7 +693,7 @@ async function readBody(req) {
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
-    throw new ApiError(400, "JSON invÃ¡lido no corpo da requisiÃ§Ã£o.");
+    throw new ApiError(400, "JSON inválido no corpo da requisição.");
   }
 }
 
@@ -726,44 +726,44 @@ function validateRequestPayload(row) {
   const errors = [];
   const missing = REQUIRED_REQUEST_FIELDS.filter((field) => !normalizeText(row[field]));
   if (missing.length) {
-    errors.push(`Campos obrigatÃ³rios ausentes: ${missing.join(", ")}.`);
+    errors.push(`Campos obrigatórios ausentes: ${missing.join(", ")}.`);
   }
 
   if (digitsOnly(row.cpf).length !== 11) {
-    errors.push("CPF precisa ter 11 nÃºmeros.");
+    errors.push("CPF precisa ter 11 números.");
   }
 
   ["dataEvento", "dataNascimento", "dataIda", "dataVolta"].forEach((field) => {
     if (row[field] && !isValidDateInput(row[field])) {
-      errors.push(`Data invÃ¡lida em ${field}.`);
+      errors.push(`Data inválida em ${field}.`);
     }
   });
 
   if (row.dataIda && row.dataVolta && row.dataVolta < row.dataIda) {
-    errors.push("A data de volta nÃ£o pode ser anterior Ã  data de ida.");
+    errors.push("A data de volta não pode ser anterior à data de ida.");
   }
 
   if (row.dataEvento && row.dataIda && row.dataEvento < row.dataIda) {
-    errors.push("A data do evento nÃ£o pode ser anterior Ã  data de ida.");
+    errors.push("A data do evento não pode ser anterior à data de ida.");
   }
 
   if (!findLinkedProject(row.idFiotec)) {
-    errors.push("ID FIOTEC nÃ£o localizado na lista de projetos.");
+    errors.push("ID FIOTEC não localizado na lista de projetos.");
   }
 
   if (row.status && !REQUEST_STATUS_OPTIONS.includes(row.status)) {
-    errors.push(`Status invÃ¡lido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
+    errors.push(`Status inválido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
   }
 
   if (
     normalizedFilterText(row.necessarioValorMaximoDiaria) === "sim" &&
     parseMoneyValue(row.valorMaximoDiaria) === 0
   ) {
-    errors.push("Informe o valor mÃ¡ximo da diÃ¡ria quando o campo 25 estiver marcado como SIM.");
+    errors.push("Informe o valor máximo da diária quando o campo 25 estiver marcado como SIM.");
   }
 
   if (errors.length) {
-    throw new ApiError(422, "Revise os dados da solicitaÃ§Ã£o.", errors);
+    throw new ApiError(422, "Revise os dados da solicitação.", errors);
   }
 }
 
@@ -794,10 +794,10 @@ function buildStatusAudit(previous, next, authContext) {
     .toUpperCase()}`;
   return {
     id,
-    titulo: next.nomeCompleto || next.nomeEvento || "SolicitaÃ§Ã£o sem tÃ­tulo",
+    titulo: next.nomeCompleto || next.nomeEvento || "Solicitação sem título",
     idAlteracao: id,
     idChamado: next.id,
-    tipoAlteracao: "ALTERAÃ‡ÃƒO DE STATUS",
+    tipoAlteracao: "ALTERAÇÃO DE STATUS",
     motivoAlteracao: "Status atualizado no painel administrativo",
     dataAlteracao: now.toISOString(),
     dataAlteracaoClient: now.toLocaleString("pt-BR"),
@@ -806,13 +806,13 @@ function buildStatusAudit(previous, next, authContext) {
     valorOriginal: previous.status || "Recebida",
     valorNovo: next.status || "Recebida",
     origem: "Backend",
-    observacao: "Registro automÃ¡tico gerado pela API.",
+    observacao: "Registro automático gerado pela API.",
   };
 }
 
 function countBy(rows, getter) {
   return rows.reduce((acc, item) => {
-    const key = normalizeText(getter(item)) || "NÃ£o informado";
+    const key = normalizeText(getter(item)) || "Não informado";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
@@ -881,7 +881,7 @@ async function handleApi(req, res, url) {
         verifyPassword(body.password, item.passwordHash),
     );
     if (!user) {
-      sendJson(res, 401, { error: "Login ou senha invalidos." });
+      sendJson(res, 401, { error: "Login ou senha inválidos." });
       return;
     }
 
@@ -939,7 +939,7 @@ async function handleApi(req, res, url) {
       return;
     }
     if (authContext.db.admins.some((admin) => normalizeLogin(admin.login) === login)) {
-      sendJson(res, 409, { error: "Este login ja esta cadastrado." });
+      sendJson(res, 409, { error: "Este login já está cadastrado." });
       return;
     }
 
@@ -959,7 +959,7 @@ async function handleApi(req, res, url) {
 
   const collection = collectionNameFromUrl(url.pathname);
   if (!collection) {
-    sendJson(res, 404, { error: "Rota nao encontrada." });
+    sendJson(res, 404, { error: "Rota não encontrada." });
     return;
   }
 
@@ -980,7 +980,7 @@ async function handleApi(req, res, url) {
       (row) => String(row.id).toUpperCase() === id.toUpperCase(),
     );
     if (!item) {
-      sendJson(res, 404, { error: "Registro nao encontrado." });
+      sendJson(res, 404, { error: "Registro não encontrado." });
       return;
     }
     sendJson(res, 200, { data: item });
@@ -1029,7 +1029,7 @@ async function handleApi(req, res, url) {
     return;
   }
 
-  sendJson(res, 405, { error: "Metodo nao permitido." });
+  sendJson(res, 405, { error: "Método não permitido." });
 }
 
 function resolveInside(baseDir, requestedPath) {
@@ -1074,7 +1074,7 @@ async function serveStatic(req, res, url) {
   sendText(
     res,
     404,
-    "Arquivo nao encontrado. Rode `npm run build` para gerar o frontend em dist/.",
+    "Arquivo não encontrado. Rode `npm run build` para gerar o frontend em dist/.",
   );
 }
 

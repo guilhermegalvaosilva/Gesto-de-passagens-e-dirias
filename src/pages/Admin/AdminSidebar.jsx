@@ -1,6 +1,6 @@
 const adminTabs = [
   ["dashboard", "Resumo"],
-  ["solicitacoes", "Solicitacoes"],
+  ["solicitacoes", "Solicitações"],
   ["alteracoes", "Auditoria"],
   ["notificacoes", "Alertas"],
   ["financeiro", "Financeiro"],
