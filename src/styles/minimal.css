@@ -857,12 +857,12 @@ select:focus,
 }
 
 .operational-summary-row span {
-  color: #111;
+  color: var(--primary-dark);
   font-weight: 900;
 }
 
 .operational-summary-row strong {
-  color: #111;
+  color: var(--primary-dark);
   font-size: 1.45rem;
   font-weight: 800;
 }
@@ -871,18 +871,18 @@ select:focus,
   height: 14px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e9e9e3;
+  background: #e8f0f6;
 }
 
 .operational-summary-row > div:nth-child(2) span {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: #202020;
+  background: linear-gradient(90deg, var(--primary), #5ca8d6);
 }
 
 .operational-summary-row small {
-  color: #55534f;
+  color: var(--muted);
   font-size: 0.86rem;
 }
 
@@ -912,12 +912,12 @@ select:focus,
 }
 
 .flight-status-row span {
-  color: #111;
+  color: var(--primary-dark);
   font-weight: 900;
 }
 
 .flight-status-row strong {
-  color: #111;
+  color: var(--primary-dark);
   font-size: 1.1rem;
 }
 
@@ -925,18 +925,18 @@ select:focus,
   height: 11px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e9e9e3;
+  background: #e8f0f6;
 }
 
 .flight-status-row > div:last-of-type span {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: #202020;
+  background: linear-gradient(90deg, var(--primary), #5ca8d6);
 }
 
 .flight-status-row small {
-  color: #66645f;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -951,13 +951,13 @@ select:focus,
 }
 
 .finance-gauge text:first-of-type {
-  fill: #111;
+  fill: var(--primary-dark);
   font-size: 22px;
   font-weight: 900;
 }
 
 .finance-gauge text:last-of-type {
-  fill: #66645f;
+  fill: var(--muted);
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -986,23 +986,24 @@ select:focus,
   display: flex;
   align-items: end;
   justify-content: center;
-  border-bottom: 1px solid #111;
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .finance-column > div span {
   width: min(46px, 68%);
   min-height: 8px;
   display: block;
-  background: #202020;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--primary));
 }
 
 .finance-column strong {
-  color: #111;
+  color: var(--primary-dark);
   font-size: 1.25rem;
 }
 
 .finance-column small {
-  color: #55534f;
+  color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.25;
 }

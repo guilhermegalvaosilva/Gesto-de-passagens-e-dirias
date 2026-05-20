@@ -1,24 +1,63 @@
 import {
   createdAtDisplay,
   formatCurrency,
+  formatDate,
   normalizeText,
   normalizedFilterText,
   parseMoneyValue,
 } from "../../utils/formatters";
 
+const OPEN_STATUS_KEYS = new Set(["recebida", "em analise", "pendente"]);
+const APPROVED_STATUS_KEYS = new Set(["aprovada"]);
+const CLOSED_STATUS_KEYS = new Set(["concluida", "cancelada"]);
+
 function hasDaily(item) {
   return normalizedFilterText(item.necessidade).includes("diaria");
+}
+
+function statusKey(item) {
+  return normalizedFilterText(item.status || "Recebida");
 }
 
 function percent(value, total) {
   return total ? Math.round((value / total) * 100) : 0;
 }
 
+function parseInputDate(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, year, month, day] = match.map(Number);
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function daysUntil(value) {
+  const date = parseInputDate(value);
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return Math.ceil((date.getTime() - today.getTime()) / 86400000);
+}
+
+function monthLabel(value) {
+  const date = parseInputDate(value);
+  if (!date) return "Sem data";
+  return new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit" })
+    .format(date)
+    .replace(".", "");
+}
+
+function monthSortValue(value) {
+  const date = parseInputDate(value);
+  return date ? date.getFullYear() * 100 + date.getMonth() : 999999;
+}
+
 function sumBy(rows, getter) {
   return Object.entries(
-    rows.reduce((acc, item) => {
+    rows.reduce((acc, { item, value }) => {
       const key = normalizeText(getter(item)) || "Não informado";
-      acc[key] = (acc[key] || 0) + parseMoneyValue(item.valorMaximoDiaria);
+      acc[key] = (acc[key] || 0) + value;
       return acc;
     }, {}),
   )
@@ -27,9 +66,13 @@ function sumBy(rows, getter) {
     .slice(0, 6);
 }
 
-function FinanceMetric({ label, value, note, highlight }) {
+function sumValues(rows) {
+  return rows.reduce((sum, row) => sum + row.value, 0);
+}
+
+function FinanceMetric({ label, value, note, highlight, tone }) {
   return (
-    <article className={`finance-metric ${highlight ? "highlight" : ""}`}>
+    <article className={`finance-metric ${highlight ? "highlight" : ""} ${tone || ""}`}>
       <span>{label}</span>
       <strong>{value}</strong>
       <small>{note}</small>
@@ -37,11 +80,12 @@ function FinanceMetric({ label, value, note, highlight }) {
   );
 }
 
-function FinanceBarList({ title, rows, total, empty }) {
+function FinanceBarList({ title, rows, total, empty, note }) {
   return (
     <article className="chart-card finance-chart-card">
       <div className="chart-heading">
         <h4>{title}</h4>
+        {note && <small>{note}</small>}
       </div>
       <div className="finance-bar-list">
         {rows.length ? (
@@ -102,6 +146,7 @@ function FinanceGauge({ coverage }) {
     <article className="chart-card finance-gauge-card">
       <div className="chart-heading">
         <h4>Qualidade financeira</h4>
+        <small>Percentual de diárias com valor preenchido</small>
       </div>
       <svg className="finance-gauge" viewBox="0 0 112 112" role="img" aria-label={`${coverage}% de cobertura de valores`}>
         <circle className="donut-track" cx="56" cy="56" r={radius} />
@@ -119,20 +164,96 @@ function FinanceGauge({ coverage }) {
   );
 }
 
+function FinanceMonthlyChart({ rows, total }) {
+  const max = Math.max(...rows.map(([, value]) => value), 1);
+
+  return (
+    <article className="chart-card finance-monthly-card">
+      <div className="chart-heading">
+        <h4>Estimativa por mês de viagem</h4>
+        <small>Valores agrupados pela data de ida</small>
+      </div>
+      <div className="finance-monthly-chart">
+        {rows.length ? (
+          rows.map(([label, value]) => (
+            <div className="finance-month-column" key={label}>
+              <div aria-hidden="true">
+                <span style={{ height: `${Math.max(8, (value / max) * 100)}%` }} />
+              </div>
+              <strong>{formatCurrency(value)}</strong>
+              <small>{label}</small>
+              <em>{percent(value, total)}%</em>
+            </div>
+          ))
+        ) : (
+          <div className="empty-records">Nenhum mês com valor informado.</div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function FinancePendingList({ rows }) {
+  return (
+    <article className="chart-card finance-pending-card">
+      <div className="chart-heading">
+        <h4>Diárias sem valor</h4>
+        <small>Solicitações que precisam de complemento financeiro</small>
+      </div>
+      <div className="finance-pending-list">
+        {rows.length ? (
+          rows.map(({ item, days }) => (
+            <div className="finance-pending-item" key={item.id}>
+              <div>
+                <strong>{item.nomeCompleto || item.nomeEvento || item.id}</strong>
+                <span>{item.status || "Recebida"} | ida {formatDate(item.dataIda) || "-"}</span>
+              </div>
+              <b>{days === null ? "Sem data" : days < 0 ? "Vencida" : `${days}d`}</b>
+            </div>
+          ))
+        ) : (
+          <div className="empty-records">Todas as diárias carregadas têm valor informado.</div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export function FinancePanel({ requests }) {
   const dailyRows = requests.filter(hasDaily);
   const valuedRows = dailyRows
     .map((item) => ({ item, value: parseMoneyValue(item.valorMaximoDiaria) }))
     .filter(({ value }) => value > 0);
-  const total = valuedRows.reduce((sum, row) => sum + row.value, 0);
+  const total = sumValues(valuedRows);
   const average = valuedRows.length ? total / valuedRows.length : 0;
+  const missingValueRows = dailyRows
+    .filter((item) => parseMoneyValue(item.valorMaximoDiaria) === 0)
+    .map((item) => ({ item, days: daysUntil(item.dataIda) }))
+    .sort((a, b) => (a.days ?? 999) - (b.days ?? 999))
+    .slice(0, 6);
   const missingValue = dailyRows.length - valuedRows.length;
   const coverage = percent(valuedRows.length, dailyRows.length);
-  const topValues = valuedRows
+  const openEstimate = sumValues(valuedRows.filter(({ item }) => OPEN_STATUS_KEYS.has(statusKey(item))));
+  const approvedEstimate = sumValues(valuedRows.filter(({ item }) => APPROVED_STATUS_KEYS.has(statusKey(item))));
+  const closedEstimate = sumValues(valuedRows.filter(({ item }) => CLOSED_STATUS_KEYS.has(statusKey(item))));
+  const topValues = [...valuedRows]
     .sort((a, b) => b.value - a.value)
     .slice(0, 6);
-  const bySector = sumBy(dailyRows, (item) => item.setorFiocruz);
-  const byStatus = sumBy(dailyRows, (item) => item.status || "Recebida");
+  const bySector = sumBy(valuedRows, (item) => item.setorFiocruz);
+  const byStatus = sumBy(valuedRows, (item) => item.status || "Recebida");
+  const monthlyRows = Object.entries(
+    valuedRows.reduce((acc, row) => {
+      const label = monthLabel(row.item.dataIda);
+      acc[label] = (acc[label] || 0) + row.value;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => {
+      const first = valuedRows.find((row) => monthLabel(row.item.dataIda) === a[0])?.item.dataIda;
+      const second = valuedRows.find((row) => monthLabel(row.item.dataIda) === b[0])?.item.dataIda;
+      return monthSortValue(first) - monthSortValue(second);
+    })
+    .slice(-6);
 
   return (
     <section className="dashboard-section admin-panel active">
@@ -140,34 +261,51 @@ export function FinancePanel({ requests }) {
         <div className="finance-hero">
           <div>
             <span className="section-kicker">Finanças</span>
-            <h3>Estimativa de diárias</h3>
+            <h3>Estimativa financeira de diárias</h3>
             <p className="table-note">
-              Valores calculados a partir de solicitações com diária e campo de valor preenchido.
+              Valores calculados em tempo real a partir das solicitações com diária e campo de valor preenchido.
             </p>
           </div>
           <div className="finance-total-card">
             <span>Total estimado</span>
             <strong>{formatCurrency(total)}</strong>
-            <small>{valuedRows.length} solicitação(ões) com valor</small>
+            <small>{valuedRows.length} solicitação(ões) com valor | {missingValue} sem valor</small>
           </div>
         </div>
 
         <div className="finance-metric-grid">
-          <FinanceMetric label="Média por solicitação" value={formatCurrency(average)} note="Média apenas entre registros com valor." highlight />
+          <FinanceMetric label="Em aberto" value={formatCurrency(openEstimate)} note="Recebidas, em análise e pendentes." highlight />
+          <FinanceMetric label="Aprovado" value={formatCurrency(approvedEstimate)} note={`${percent(approvedEstimate, total)}% do valor estimado.`} />
+          <FinanceMetric label="Encerrado" value={formatCurrency(closedEstimate)} note="Concluídas ou canceladas." />
+          <FinanceMetric label="Média por diária" value={formatCurrency(average)} note="Média entre registros com valor." />
           <FinanceMetric label="Cobertura de valores" value={`${coverage}%`} note={`${valuedRows.length} de ${dailyRows.length} diária(s) preenchida(s).`} />
-          <FinanceMetric label="Sem valor informado" value={missingValue} note="Diárias que precisam de complemento." />
+          <FinanceMetric label="Sem valor informado" value={missingValue} note="Diárias que precisam de complemento." tone="attention" />
         </div>
 
         <div className="finance-content-grid enhanced">
+          <FinanceMonthlyChart rows={monthlyRows} total={total} />
           <FinanceGauge coverage={coverage} />
           <FinanceDistribution valuedRows={valuedRows} total={total} />
-          <FinanceBarList title="Distribuição por setor" rows={bySector} total={total} empty="Nenhum valor por setor." />
-          <FinanceBarList title="Distribuição por status" rows={byStatus} total={total} empty="Nenhum valor por status." />
+          <FinanceBarList
+            title="Distribuição por setor"
+            rows={bySector}
+            total={total}
+            empty="Nenhum valor por setor."
+            note="Mostra onde o orçamento de diária está concentrado"
+          />
+          <FinanceBarList
+            title="Distribuição por status"
+            rows={byStatus}
+            total={total}
+            empty="Nenhum valor por status."
+          />
+          <FinancePendingList rows={missingValueRows} />
         </div>
 
         <article className="chart-card finance-ranking-card">
           <div className="chart-heading">
             <h4>Maiores estimativas</h4>
+            <small>Registros com maior impacto no total financeiro</small>
           </div>
           <div className="finance-ranking-list">
             {topValues.length ? (

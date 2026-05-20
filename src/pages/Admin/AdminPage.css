@@ -274,6 +274,13 @@ main:has(.admin-dashboard) {
   line-height: 1.4;
 }
 
+.dashboard-metric.attention,
+.finance-metric.attention,
+.flight-metric.attention {
+  border-top: 4px solid var(--accent);
+  background: linear-gradient(180deg, #fff, #fffaf0);
+}
+
 .dashboard-donut-grid,
 .dashboard-visual-grid {
   display: grid;
@@ -532,6 +539,146 @@ main:has(.admin-dashboard) {
   font-size: 12px;
 }
 
+.dashboard-grid-balanced {
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+}
+
+.dashboard-window-card,
+.dashboard-risk-card {
+  align-content: start;
+  border-radius: 12px;
+}
+
+.dashboard-window-chart {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  min-height: 190px;
+  align-items: end;
+}
+
+.dashboard-window-column {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.dashboard-window-column > div {
+  height: 104px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.dashboard-window-column > div span {
+  display: block;
+  width: min(38px, 68%);
+  min-height: 8px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--primary), #5ca8d6);
+}
+
+.dashboard-window-column strong,
+.dashboard-window-column em {
+  color: var(--primary-dark);
+  font-style: normal;
+  font-weight: 850;
+}
+
+.dashboard-window-column small {
+  min-height: 28px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.dashboard-risk-list,
+.dashboard-profile-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-risk-item {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.dashboard-risk-item > span {
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  background: #fff7df;
+  color: #8a5a00;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.dashboard-risk-item strong {
+  display: block;
+  color: var(--primary-dark);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-risk-item small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dashboard-profile-row {
+  display: grid;
+  gap: 7px;
+}
+
+.dashboard-profile-row > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-profile-row span,
+.dashboard-profile-row strong {
+  color: var(--primary-dark);
+  font-size: 13px;
+}
+
+.dashboard-profile-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-profile-row > div:last-child {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8f0f6;
+}
+
+.dashboard-profile-row > div:last-child span {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
 .flights-dashboard-card {
   display: grid;
   gap: 18px;
@@ -705,6 +852,70 @@ main:has(.admin-dashboard) {
 .flight-clear-state span {
   color: var(--muted);
   font-size: 12px;
+}
+
+.flight-pending-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.flight-pending-item div {
+  min-width: 0;
+}
+
+.flight-pending-item b {
+  color: var(--primary-dark);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.flight-monthly-card,
+.flight-destination-card {
+  border-radius: 12px;
+}
+
+.flight-monthly-chart {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  min-height: 190px;
+  align-items: end;
+}
+
+.flight-month-column {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.flight-month-column > div {
+  height: 108px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.flight-month-column > div span {
+  display: block;
+  width: min(42px, 70%);
+  min-height: 8px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--primary), #5ca8d6);
+}
+
+.flight-month-column strong,
+.flight-month-column em {
+  color: var(--primary-dark);
+  font-style: normal;
+  font-weight: 850;
+}
+
+.flight-month-column small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .finance-dashboard-card {
@@ -883,6 +1094,102 @@ main:has(.admin-dashboard) {
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finance-monthly-card,
+.finance-pending-card {
+  border-radius: 12px;
+}
+
+.finance-monthly-chart {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  min-height: 210px;
+  align-items: end;
+}
+
+.finance-month-column {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.finance-month-column > div {
+  height: 118px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.finance-month-column > div span {
+  display: block;
+  width: min(42px, 70%);
+  min-height: 8px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--primary));
+}
+
+.finance-month-column strong,
+.finance-month-column em {
+  color: var(--primary-dark);
+  font-style: normal;
+  font-weight: 850;
+}
+
+.finance-month-column strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.finance-month-column small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.finance-pending-list {
+  display: grid;
+  gap: 10px;
+}
+
+.finance-pending-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.finance-pending-item div {
+  min-width: 0;
+}
+
+.finance-pending-item strong {
+  display: block;
+  color: var(--primary-dark);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finance-pending-item span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.finance-pending-item b {
+  color: var(--primary-dark);
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -1770,6 +2077,16 @@ main:has(.admin-dashboard) {
   .dashboard-title-block h2 {
     font-size: 1.9rem;
   }
+
+  .dashboard-window-chart,
+  .finance-monthly-chart,
+  .flight-monthly-chart {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-risk-item {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 620px) {
@@ -1805,5 +2122,23 @@ main:has(.admin-dashboard) {
   .kpi-card strong,
   .insight-card strong {
     font-size: 1.8rem;
+  }
+
+  .dashboard-window-chart,
+  .finance-monthly-chart,
+  .flight-monthly-chart {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-risk-item,
+  .finance-pending-item,
+  .flight-pending-item {
+    grid-template-columns: 1fr;
+  }
+
+  .finance-pending-item,
+  .flight-pending-item {
+    display: grid;
+    align-items: start;
   }
 }

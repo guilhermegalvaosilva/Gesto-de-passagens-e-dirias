@@ -29,16 +29,18 @@ export function AdminPage({ onBack }) {
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async ({ silent = false } = {}) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const [requestsPayload, auditPayload] = await Promise.all([
         apiRequest("/solicitacoes?sort=createdAt&order=desc"),
         apiRequest("/alteracoes?sort=dataAlteracao&order=desc"),
       ]);
       setRequests(requestsPayload.data || []);
       setAuditLogs(auditPayload.data || []);
+      setLastUpdatedAt(new Date());
       setMessage(null);
     } catch (error) {
       setMessage({
@@ -46,7 +48,7 @@ export function AdminPage({ onBack }) {
         text: error.message || "Erro ao carregar painel.",
       });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -63,6 +65,13 @@ export function AdminPage({ onBack }) {
       void loadData();
     });
   }, [loadData, onBack]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void loadData({ silent: true });
+    }, 60000);
+    return () => window.clearInterval(interval);
+  }, [loadData]);
 
   const filteredRequests = useMemo(() => {
     let rows = search
@@ -163,8 +172,22 @@ export function AdminPage({ onBack }) {
                   <strong>{savedSession().login || "admin"}</strong>
                 </div>
               </div>
+              <div className="admin-session-card">
+                <span className="status-dot" />
+                <div>
+                  <small>Atualizado</small>
+                  <strong>
+                    {lastUpdatedAt
+                      ? lastUpdatedAt.toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "..."}
+                  </strong>
+                </div>
+              </div>
               <div className="dashboard-actions">
-                <button type="button" onClick={loadData}>
+                <button type="button" onClick={() => loadData()}>
                   Atualizar
                 </button>
                 <button type="button" onClick={exportWorkbook}>
