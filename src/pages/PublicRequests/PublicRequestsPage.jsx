@@ -229,7 +229,7 @@ function PublicRequestCard({ item }) {
           item.id,
         )}/alteracoes?sort=dataAlteracao&order=desc`,
       );
-      setAuditLogs(payload.data || []);
+      setAuditLogs((payload.data || []).filter(isEditionAuditLog));
       setLogsLoaded(true);
     } catch (error) {
       setLogMessage(error.message || "Não foi possível carregar o histórico.");
