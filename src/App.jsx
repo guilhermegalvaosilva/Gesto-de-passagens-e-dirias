@@ -5,15 +5,18 @@ import { STORAGE_KEYS } from "./config/storageKeys";
 import { AdminPage } from "./pages/Admin/AdminPage";
 import { LoginPage } from "./pages/Auth/LoginPage";
 import { HomePage } from "./pages/Home/HomePage";
+import { PublicRequestsPage } from "./pages/PublicRequests/PublicRequestsPage";
 import { RequestFormPage } from "./pages/RequestForm/RequestFormPage";
 import { apiRequest, validateSession } from "./services/api";
 import { readJSON, removeStorage } from "./services/storage";
 
-const publicPages = new Set(["home", "form", "login"]);
+const publicPages = new Set(["home", "form", "consulta", "login"]);
 
 function savedPage() {
   const value = window.localStorage.getItem(STORAGE_KEYS.activePage);
-  return ["home", "form", "login", "admin"].includes(value) ? value : "home";
+  return ["home", "form", "consulta", "login", "admin"].includes(value)
+    ? value
+    : "home";
 }
 
 function App() {
@@ -93,6 +96,7 @@ function App() {
           <HomePage
             storageMode={storageMode}
             onAdmin={openAdmin}
+            onConsult={() => setPage("consulta")}
             onForm={() => {
               removeStorage(STORAGE_KEYS.pendingEditId);
               setPage("form");
@@ -102,7 +106,13 @@ function App() {
         {page === "login" && (
           <LoginPage onBack={() => setPage("home")} onLogin={() => setPage("admin")} />
         )}
-        {page === "form" && <RequestFormPage onBack={() => setPage("home")} />}
+        {page === "form" && (
+          <RequestFormPage
+            onBack={() => setPage("home")}
+            onConsult={() => setPage("consulta")}
+          />
+        )}
+        {page === "consulta" && <PublicRequestsPage onBack={() => setPage("home")} />}
         {page === "admin" && <AdminPage onBack={() => setPage("home")} />}
       </main>
     </>

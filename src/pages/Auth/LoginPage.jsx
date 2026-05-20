@@ -33,7 +33,7 @@ export function LoginPage({ onBack, onLogin }) {
           <span className="section-kicker">Fiocruz Brasília | NUGB</span>
           <h2>Acesso administrativo</h2>
           <p className="subtitle">
-            Entre para acompanhar fila, auditoria, financeiro, voos e
+            Entre para acompanhar fila, alterações, financeiro, voos e
             exportações da operação.
           </p>
         </div>

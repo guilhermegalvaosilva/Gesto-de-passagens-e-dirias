@@ -36,6 +36,13 @@
   font-size: 15px;
 }
 
+.form-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .form-step-nav {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -382,7 +389,9 @@
   }
 
   .form-actions > *,
-  .edit-lookup-row > button {
+  .edit-lookup-row > button,
+  .form-header-actions,
+  .form-header-actions > * {
     width: 100%;
   }
 

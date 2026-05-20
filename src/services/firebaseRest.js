@@ -116,6 +116,31 @@ function parseCollectionPath(path) {
   };
 }
 
+function requestAuditIdFromPath(path) {
+  const cleanPath = path.split("?")[0].replace(/^\/+/, "");
+  const parts = cleanPath.split("/");
+  const [collectionKey, id = "", nested = ""] = parts;
+  if (collectionKey === "solicitacoes" && id && nested === "alteracoes") {
+    return decodeURIComponent(id);
+  }
+  if (
+    collectionKey === "public" &&
+    parts[1] === "solicitacoes" &&
+    parts[2] &&
+    parts[3] === "alteracoes"
+  ) {
+    return decodeURIComponent(parts[2]);
+  }
+  return "";
+}
+
+function publicCollectionFromPath(path) {
+  const cleanPath = path.split("?")[0].replace(/^\/+/, "");
+  if (cleanPath === "public/solicitacoes") return COLLECTIONS.solicitacoes;
+  if (cleanPath === "public/alteracoes") return COLLECTIONS.alteracoes;
+  return "";
+}
+
 export function canUseFirebaseRest() {
   const config = firebaseConfig();
   return Boolean(config?.projectId && config?.apiKey);
@@ -135,10 +160,29 @@ export async function firebaseApiRequest(path, options = {}) {
     };
   }
 
+  const method = options.method || "GET";
+  const requestAuditId = requestAuditIdFromPath(path);
+  if (method === "GET" && requestAuditId) {
+    const payload = await requestFirestore(endpoint(COLLECTIONS.alteracoes));
+    const rows = (payload.documents || [])
+      .map(fromFirestoreDocument)
+      .filter(
+        (item) =>
+          String(item.idChamado || "").toUpperCase() ===
+          requestAuditId.toUpperCase(),
+      );
+    return { data: sortRows(rows, path), database: "firestore" };
+  }
+
+  const publicCollection = publicCollectionFromPath(path);
+  if (method === "GET" && publicCollection) {
+    const payload = await requestFirestore(endpoint(publicCollection));
+    const rows = (payload.documents || []).map(fromFirestoreDocument);
+    return { data: sortRows(rows, path), database: "firestore" };
+  }
+
   const { collection, id } = parseCollectionPath(path);
   if (!collection) throw new Error("Rota não disponível no Firebase.");
-
-  const method = options.method || "GET";
 
   if (method === "GET" && id) {
     const document = await requestFirestore(endpoint(collection, id));

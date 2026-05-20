@@ -11,11 +11,10 @@ export function AuditPanel({ logs }) {
       <div className="admin-table-panel audit-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Histórico do dia</span>
-            <h3>Alterações realizadas</h3>
+            <span className="section-kicker">Alterações do dia</span>
+            <h3>Histórico de alterações</h3>
             <p className="table-note">
-              Mostra somente edições registradas hoje em formulários carregados
-              pelo ID.
+              Mostra o campo alterado, o valor antigo e o valor informado na alteração.
             </p>
           </div>
           <div className="audit-count">

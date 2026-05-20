@@ -258,15 +258,15 @@ export const labels = {
 };
 
 export const auditColumns = [
-  ["idChamado", "ID_CHAMADO"],
-  ["tipoAlteracao", "TIPO"],
-  ["motivoAlteracao", "MOTIVO"],
-  ["dataAlteracaoClient", "DATA"],
-  ["campoAlterado", "CAMPO"],
-  ["alteradoPor", "ALTERADO_POR"],
-  ["valorOriginal", "VALOR_ORIGINAL"],
-  ["valorNovo", "VALOR_NOVO"],
-  ["origem", "ORIGEM"],
+  ["idChamado", "Solicitação"],
+  ["tipoAlteracao", "Tipo"],
+  ["motivoAlteracao", "Motivo"],
+  ["dataAlteracaoClient", "Data"],
+  ["campoAlterado", "Campo alterado"],
+  ["alteradoPor", "Alterado por"],
+  ["valorOriginal", "Valor antigo"],
+  ["valorNovo", "Valor alterado"],
+  ["origem", "Origem"],
 ];
 
 export const blankForm = {

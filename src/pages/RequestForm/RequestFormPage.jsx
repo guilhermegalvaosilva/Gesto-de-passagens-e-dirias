@@ -135,7 +135,7 @@ function validateForm(form) {
   return errors;
 }
 
-export function RequestFormPage({ onBack }) {
+export function RequestFormPage({ onBack, onConsult }) {
   const [form, setForm] = useState(blankForm);
   const [editing, setEditing] = useState(null);
   const [editId, setEditId] = useState("");
@@ -276,13 +276,18 @@ export function RequestFormPage({ onBack }) {
           <span className="section-kicker">Fiocruz Brasília | NUGB</span>
           <h2>Solicitação de viagem</h2>
           <p className="subtitle">
-            Registro institucional para passagens, diárias, auditoria e
+            Registro institucional para passagens, diárias, alterações e
             acompanhamento administrativo.
           </p>
         </div>
-        <button className="btn btn-ghost" type="button" onClick={onBack}>
-          Voltar ao início
-        </button>
+        <div className="form-header-actions">
+          <button className="btn btn-ghost" type="button" onClick={onConsult}>
+            Consultar solicitação
+          </button>
+          <button className="btn btn-ghost" type="button" onClick={onBack}>
+            Voltar ao início
+          </button>
+        </div>
       </div>
 
       <div className="form-step-nav" aria-label="Seções do formulário">
@@ -604,7 +609,7 @@ export function RequestFormPage({ onBack }) {
             <strong>
               {editing ? "Editando solicitação" : "Pronto para envio"}
             </strong>
-            <small>O registro será salvo na base e auditado pela API.</small>
+            <small>O registro será salvo na base e terá alterações registradas pela API.</small>
           </div>
           <label className="pdf-option">
             <input

@@ -1,0 +1,99 @@
+.public-requests-page {
+  display: grid;
+  gap: 18px;
+  max-width: 1520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.public-requests-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.public-requests-header h2 {
+  margin: 6px 0 8px;
+}
+
+.public-requests-header .subtitle {
+  max-width: 760px;
+}
+
+.public-header-actions,
+.public-record-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.public-requests-workspace {
+  margin-bottom: 0;
+}
+
+.public-section-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.public-section-tabs button {
+  min-height: 40px;
+  border-color: var(--border);
+  background: #fff;
+  color: var(--primary);
+}
+
+.public-section-tabs button.active,
+.public-section-tabs button.active:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.public-record-card .record-card-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.public-record-card .record-card-body {
+  padding-bottom: 14px;
+}
+
+.public-audit-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.public-audit-heading {
+  margin-bottom: 0;
+}
+
+.public-activity-panel {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .public-requests-header {
+    display: grid;
+  }
+
+  .public-section-tabs > *,
+  .public-header-actions,
+  .public-header-actions > *,
+  .public-record-actions,
+  .public-record-actions > * {
+    width: 100%;
+  }
+}

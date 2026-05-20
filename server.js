@@ -957,6 +957,66 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (url.pathname === "/api/public/solicitacoes") {
+    if (req.method !== "GET") {
+      sendJson(res, 405, { error: "Método não permitido." });
+      return;
+    }
+
+    const db = await readDb();
+    sendJson(res, 200, { data: sortRows(db.solicitacoes, url.searchParams) });
+    return;
+  }
+
+  if (url.pathname === "/api/public/alteracoes") {
+    if (req.method !== "GET") {
+      sendJson(res, 405, { error: "Método não permitido." });
+      return;
+    }
+
+    const db = await readDb();
+    sendJson(res, 200, { data: sortRows(db.alteracoes, url.searchParams) });
+    return;
+  }
+
+  const publicRequestAuditMatch = url.pathname.match(
+    /^\/api\/public\/solicitacoes\/([^/]+)\/alteracoes\/?$/,
+  );
+  if (publicRequestAuditMatch) {
+    if (req.method !== "GET") {
+      sendJson(res, 405, { error: "Método não permitido." });
+      return;
+    }
+
+    const requestId = decodeURIComponent(publicRequestAuditMatch[1]);
+    const db = await readDb();
+    const rows = db.alteracoes.filter(
+      (item) =>
+        String(item.idChamado || "").toUpperCase() === requestId.toUpperCase(),
+    );
+    sendJson(res, 200, { data: sortRows(rows, url.searchParams) });
+    return;
+  }
+
+  const requestAuditMatch = url.pathname.match(
+    /^\/api\/solicitacoes\/([^/]+)\/alteracoes\/?$/,
+  );
+  if (requestAuditMatch) {
+    if (req.method !== "GET") {
+      sendJson(res, 405, { error: "Método não permitido." });
+      return;
+    }
+
+    const requestId = decodeURIComponent(requestAuditMatch[1]);
+    const db = await readDb();
+    const rows = db.alteracoes.filter(
+      (item) =>
+        String(item.idChamado || "").toUpperCase() === requestId.toUpperCase(),
+    );
+    sendJson(res, 200, { data: sortRows(rows, url.searchParams) });
+    return;
+  }
+
   const collection = collectionNameFromUrl(url.pathname);
   if (!collection) {
     sendJson(res, 404, { error: "Rota não encontrada." });

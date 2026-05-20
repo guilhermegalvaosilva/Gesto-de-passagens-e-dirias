@@ -152,7 +152,7 @@ export function AdminPage({ onBack }) {
               <h2>Painel administrativo</h2>
               <p className="subtitle">
                 Operação consolidada, filtros vivos e documentos prontos para
-                auditoria, financeiro e logística.
+                alterações, financeiro e logística.
               </p>
             </div>
             <div className="dashboard-header-meta">
