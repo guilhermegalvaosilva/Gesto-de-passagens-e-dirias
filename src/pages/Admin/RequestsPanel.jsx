@@ -1,6 +1,11 @@
 import { Fragment, useMemo, useState } from "react";
 import { REQUESTS_PAGE_SIZE } from "../../config/appConfig";
-import { createdAtDisplay, formatDate, normalizeText } from "../../utils/formatters";
+import {
+  createdAtDisplay,
+  formatDate,
+  normalizeText,
+  visibleMetaProjeto,
+} from "../../utils/formatters";
 
 function normalizeValue(value) {
   return normalizeText(value || "");
@@ -36,7 +41,7 @@ export function RequestsPanel({ rows, onDelete }) {
         if (travelerFilter && !normalizeValue(item.nomeCompleto).includes(normalizeValue(travelerFilter))) {
           return false;
         }
-        if (projectFilter && !normalizeValue(item.idFiotec || item.metaProjeto).includes(normalizeValue(projectFilter))) {
+        if (projectFilter && !normalizeValue(item.idFiotec || visibleMetaProjeto(item.metaProjeto)).includes(normalizeValue(projectFilter))) {
           return false;
         }
         if (coordinatorFilter && !normalizeValue(item.coordenador).includes(normalizeValue(coordinatorFilter))) {
@@ -121,7 +126,7 @@ export function RequestsPanel({ rows, onDelete }) {
           </label>
           <label htmlFor="project-filter">
             <span>Projeto FIOTEC</span>
-            <input id="project-filter" value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} placeholder="ID / meta" />
+            <input id="project-filter" value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} placeholder="ID FIOTEC ou meta" />
           </label>
           <label htmlFor="coordinator-filter">
             <span>Coordenador</span>
@@ -177,7 +182,7 @@ export function RequestsPanel({ rows, onDelete }) {
                       <td>{item.id}</td>
                       <td>{item.nomeEvento || "-"}</td>
                       <td>{item.nomeCompleto || "-"}</td>
-                      <td>{item.idFiotec || item.metaProjeto || "-"}</td>
+                      <td>{item.idFiotec || visibleMetaProjeto(item.metaProjeto) || "-"}</td>
                       <td>{item.coordenador || "-"}</td>
                       <td>{item.setorFiocruz || "-"}</td>
                       <td>{item.status || "Recebida"}</td>

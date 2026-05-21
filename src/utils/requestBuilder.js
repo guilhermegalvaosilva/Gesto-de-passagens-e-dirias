@@ -1,6 +1,6 @@
 import { linkedProjects, labels, requestFields } from "../data/formData";
 import { savedSession } from "../services/api";
-import { displayValue, normalizeText } from "./formatters";
+import { displayValue, normalizeText, visibleMetaProjeto } from "./formatters";
 
 function createRequestId() {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -36,7 +36,7 @@ export function buildRequestObject(form, existingRequest) {
   data.createdAtIso = existingRequest?.createdAtIso || data.createdAt;
   data.updatedAt = existingRequest ? now.toISOString() : "";
   data.updatedAtClient = existingRequest ? now.toLocaleString("pt-BR") : "";
-  data.metaProjeto = project.projetoId;
+  data.metaProjeto = visibleMetaProjeto(data.metaProjeto);
   data.coordenador = project.coordenador;
   data.setorFiocruz = project.setorFiocruz;
   data.projetoVinculado = project;

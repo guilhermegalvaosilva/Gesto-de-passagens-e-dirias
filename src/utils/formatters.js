@@ -11,6 +11,15 @@ export function normalizedFilterText(value) {
     .toLowerCase();
 }
 
+export function isProjectCodeValue(value) {
+  return /^\d+\.\d+$/.test(normalizeText(value));
+}
+
+export function visibleMetaProjeto(value) {
+  const text = normalizeText(value);
+  return isProjectCodeValue(text) ? "" : text;
+}
+
 export function formatDate(value) {
   if (!value) return "";
   const parts = String(value).split("-");
@@ -31,6 +40,7 @@ export function createdAtDisplay(item) {
 
 export function displayValue(key, item) {
   if (key === "createdAt") return createdAtDisplay(item);
+  if (key === "metaProjeto") return visibleMetaProjeto(item[key]) || "-";
   if (["dataEvento", "dataNascimento", "dataIda", "dataVolta"].includes(key)) {
     return formatDate(item[key]) || "-";
   }

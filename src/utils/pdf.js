@@ -26,7 +26,7 @@ const pdfFields = [
     "02. Projeto Vinculado",
     [
       ["6. Identificação do Projeto - ID FIOTEC", "idFiotec"],
-      ["7. Projeto ID / Meta do Projeto", "metaProjeto"],
+      ["7. Meta do Projeto", "metaProjeto"],
       ["8. Coordenador", "coordenador"],
       ["9. Setor Fiocruz", "setorFiocruz"],
     ],

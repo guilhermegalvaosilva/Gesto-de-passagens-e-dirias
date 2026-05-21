@@ -12,6 +12,7 @@ import {
   isEditionAuditLog,
   isToday,
   normalizedFilterText,
+  visibleMetaProjeto,
 } from "../../utils/formatters";
 import { generatePDF } from "../../utils/pdf";
 
@@ -291,7 +292,7 @@ function PublicRequestCard({ item }) {
         </div>
         <div>
           <span>Projeto</span>
-          <strong>{item.metaProjeto || item.idFiotec || "-"}</strong>
+          <strong>{item.idFiotec || visibleMetaProjeto(item.metaProjeto) || "-"}</strong>
         </div>
       </div>
 
@@ -574,7 +575,7 @@ export function PublicRequestsPage({ onBack }) {
               id="public-requests-search"
               value={search}
               onChange={(event) => updateFilter(setSearch, event.target.value)}
-              placeholder="Nome, evento, projeto, origem ou destino"
+              placeholder="Nome, evento, setor, origem ou destino"
             />
           </label>
           <label htmlFor="public-status-filter">

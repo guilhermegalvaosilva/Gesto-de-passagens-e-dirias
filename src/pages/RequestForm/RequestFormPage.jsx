@@ -13,9 +13,11 @@ import { apiRequest } from "../../services/api";
 import { removeStorage } from "../../services/storage";
 import {
   formatCurrencyInput,
+  isProjectCodeValue,
   normalizedFilterText,
   parseMoneyValue,
   todayInputValue,
+  visibleMetaProjeto,
 } from "../../utils/formatters";
 import { generatePDF } from "../../utils/pdf";
 import {
@@ -25,13 +27,16 @@ import {
   findLinkedProject,
 } from "../../utils/requestBuilder";
 
-const REQUIRED_PROGRESS_FIELDS = [
+const PROGRESS_QUESTIONS = [
   "descricaoSolicitacao",
   "nomeEvento",
   "dataEvento",
   "localEvento",
   "justificativa",
   "idFiotec",
+  "metaProjeto",
+  "coordenador",
+  "setorFiocruz",
   "nomeCompleto",
   "dataNascimento",
   "cargoFuncao",
@@ -46,6 +51,8 @@ const REQUIRED_PROGRESS_FIELDS = [
   "localDestino",
   "dataVolta",
   "horarioVolta",
+  "necessarioValorMaximoDiaria",
+  "valorMaximoDiaria",
 ];
 
 function digitsOnly(value) {
@@ -91,6 +98,20 @@ function ageFromDate(value) {
   return age;
 }
 
+function isQuestionAnswered(form, field) {
+  if (field === "cpf") return Boolean(digitsOnly(form.cpf));
+  if (field === "valorMaximoDiaria") {
+    if (
+      form.necessarioValorMaximoDiaria &&
+      form.necessarioValorMaximoDiaria !== "SIM"
+    ) {
+      return true;
+    }
+    return Boolean(String(form.valorMaximoDiaria || "").trim());
+  }
+  return Boolean(String(form[field] || "").trim());
+}
+
 function validateForm(form) {
   const errors = [];
   const need = normalizedFilterText(form.necessidade);
@@ -113,6 +134,10 @@ function validateForm(form) {
 
   if (!findLinkedProject(form.idFiotec)) {
     errors.push("Selecione um ID FIOTEC válido da lista de projetos.");
+  }
+
+  if (isProjectCodeValue(form.metaProjeto)) {
+    errors.push("Informe apenas a meta do projeto.");
   }
 
   if (!digitsOnly(form.banco))
@@ -150,13 +175,11 @@ export function RequestFormPage({ onBack, onConsult }) {
     () => findLinkedProject(form.idFiotec),
     [form.idFiotec],
   );
-  const completedFields = REQUIRED_PROGRESS_FIELDS.filter(
-    (field) =>
-      digitsOnly(field === "cpf" ? form[field] : "") ||
-      String(form[field] || "").trim(),
+  const completedFields = PROGRESS_QUESTIONS.filter((field) =>
+    isQuestionAnswered(form, field),
   ).length;
   const progress = Math.round(
-    (completedFields / REQUIRED_PROGRESS_FIELDS.length) * 100,
+    (completedFields / PROGRESS_QUESTIONS.length) * 100,
   );
 
   function setField(name, value) {
@@ -164,7 +187,6 @@ export function RequestFormPage({ onBack, onConsult }) {
       const next = { ...current, [name]: value };
       if (name === "idFiotec") {
         const project = findLinkedProject(value);
-        next.metaProjeto = project?.projetoId || "";
         next.coordenador = project?.coordenador || "";
         next.setorFiocruz = project?.setorFiocruz || "";
       }
@@ -185,7 +207,11 @@ export function RequestFormPage({ onBack, onConsult }) {
       );
       const item = payload.data;
       setEditing(item);
-      setForm({ ...blankForm, ...item });
+      setForm({
+        ...blankForm,
+        ...item,
+        metaProjeto: visibleMetaProjeto(item.metaProjeto),
+      });
       setEditId(item.id);
       setMessage({
         type: "success",
@@ -308,8 +334,8 @@ export function RequestFormPage({ onBack, onConsult }) {
               <span style={{ width: `${progress}%` }} />
             </div>
             <small>
-              {completedFields} de {REQUIRED_PROGRESS_FIELDS.length} campos
-              obrigatórios preenchidos.
+              {completedFields} de {PROGRESS_QUESTIONS.length} perguntas
+              preenchidas.
             </small>
           </div>
 
@@ -405,11 +431,11 @@ export function RequestFormPage({ onBack, onConsult }) {
             required
           />
           <Input
-            label="Projeto ID / Meta"
+            label="Meta do projeto"
             name="metaProjeto"
             value={form.metaProjeto}
             setField={setField}
-            readOnly
+            placeholder="Informe a meta do projeto"
             required
           />
           <Input
@@ -429,10 +455,8 @@ export function RequestFormPage({ onBack, onConsult }) {
           {selectedProject && (
             <div className="project-summary-card full">
               <span>Projeto selecionado</span>
-              <strong>{selectedProject.projetoId}</strong>
-              <small>
-                {selectedProject.coordenador} | {selectedProject.setorFiocruz}
-              </small>
+              <strong>{selectedProject.coordenador}</strong>
+              <small>{selectedProject.setorFiocruz}</small>
             </div>
           )}
         </FormSection>
@@ -589,7 +613,7 @@ export function RequestFormPage({ onBack, onConsult }) {
         <datalist id="projectOptions">
           {linkedProjects.map((project) => (
             <option key={project.idFiotec} value={project.idFiotec}>
-              {project.projetoId} - {project.coordenador}
+              {project.coordenador} - {project.setorFiocruz}
             </option>
           ))}
         </datalist>

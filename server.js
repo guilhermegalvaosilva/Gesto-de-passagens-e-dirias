@@ -187,6 +187,46 @@ function findLinkedProject(idFiotec) {
   return linkedProjects.find((project) => project.idFiotec.toUpperCase() === id);
 }
 
+function isProjectCodeValue(value) {
+  return /^\d+\.\d+$/.test(normalizeText(value));
+}
+
+function visibleMetaProjeto(value) {
+  const text = normalizeText(value);
+  return isProjectCodeValue(text) ? "" : text;
+}
+
+function publicProject(project) {
+  if (!project || typeof project !== "object") return project;
+  return {
+    idFiotec: project.idFiotec,
+    coordenador: project.coordenador,
+    setorFiocruz: project.setorFiocruz,
+  };
+}
+
+function publicRequest(row) {
+  return {
+    ...row,
+    metaProjeto: visibleMetaProjeto(row.metaProjeto),
+    projetoVinculado: publicProject(row.projetoVinculado),
+  };
+}
+
+function publicAuditRow(row) {
+  return {
+    ...row,
+    valorOriginal: isProjectCodeValue(row.valorOriginal) ? "-" : row.valorOriginal,
+    valorNovo: isProjectCodeValue(row.valorNovo) ? "-" : row.valorNovo,
+  };
+}
+
+function publicRows(collection, rows) {
+  if (collection === "solicitacoes") return rows.map(publicRequest);
+  if (collection === "alteracoes") return rows.map(publicAuditRow);
+  return rows;
+}
+
 function normalizeLogin(value) {
   return String(value || "")
     .trim()
@@ -777,6 +817,10 @@ function validateRequestPayload(row) {
     errors.push("ID FIOTEC não localizado na lista de projetos.");
   }
 
+  if (isProjectCodeValue(row.metaProjeto)) {
+    errors.push("Informe apenas a meta do projeto.");
+  }
+
   if (row.status && !REQUEST_STATUS_OPTIONS.includes(row.status)) {
     errors.push(`Status inválido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
   }
@@ -805,10 +849,10 @@ function enrichRequestPayload(row, previous) {
       previous?.createdAtClient || row.createdAtClient || now.toLocaleString("pt-BR"),
     updatedAt: previous ? now.toISOString() : row.updatedAt || "",
     updatedAtClient: previous ? now.toLocaleString("pt-BR") : row.updatedAtClient || "",
-    metaProjeto: project?.projetoId || row.metaProjeto,
+    metaProjeto: visibleMetaProjeto(row.metaProjeto),
     coordenador: project?.coordenador || row.coordenador,
     setorFiocruz: project?.setorFiocruz || row.setorFiocruz,
-    projetoVinculado: project || row.projetoVinculado,
+    projetoVinculado: publicProject(project || row.projetoVinculado),
   };
 }
 
@@ -990,7 +1034,9 @@ async function handleApi(req, res, url) {
     }
 
     const db = await readDb();
-    sendJson(res, 200, { data: sortRows(db.solicitacoes, url.searchParams) });
+    sendJson(res, 200, {
+      data: publicRows("solicitacoes", sortRows(db.solicitacoes, url.searchParams)),
+    });
     return;
   }
 
@@ -1001,7 +1047,9 @@ async function handleApi(req, res, url) {
     }
 
     const db = await readDb();
-    sendJson(res, 200, { data: sortRows(db.alteracoes, url.searchParams) });
+    sendJson(res, 200, {
+      data: publicRows("alteracoes", sortRows(db.alteracoes, url.searchParams)),
+    });
     return;
   }
 
@@ -1020,7 +1068,9 @@ async function handleApi(req, res, url) {
       (item) =>
         String(item.idChamado || "").toUpperCase() === requestId.toUpperCase(),
     );
-    sendJson(res, 200, { data: sortRows(rows, url.searchParams) });
+    sendJson(res, 200, {
+      data: publicRows("alteracoes", sortRows(rows, url.searchParams)),
+    });
     return;
   }
 
@@ -1039,7 +1089,9 @@ async function handleApi(req, res, url) {
       (item) =>
         String(item.idChamado || "").toUpperCase() === requestId.toUpperCase(),
     );
-    sendJson(res, 200, { data: sortRows(rows, url.searchParams) });
+    sendJson(res, 200, {
+      data: publicRows("alteracoes", sortRows(rows, url.searchParams)),
+    });
     return;
   }
 
@@ -1055,7 +1107,9 @@ async function handleApi(req, res, url) {
   if (req.method === "GET" && !id) {
     const authContext = await requireAuth(req, res);
     if (!authContext) return;
-    sendJson(res, 200, { data: sortRows(authContext.db[collection], url.searchParams) });
+    sendJson(res, 200, {
+      data: publicRows(collection, sortRows(authContext.db[collection], url.searchParams)),
+    });
     return;
   }
 
@@ -1069,7 +1123,7 @@ async function handleApi(req, res, url) {
       sendJson(res, 404, { error: "Registro não encontrado." });
       return;
     }
-    sendJson(res, 200, { data: item });
+    sendJson(res, 200, { data: publicRows(collection, [item])[0] });
     return;
   }
 
@@ -1099,7 +1153,10 @@ async function handleApi(req, res, url) {
     if (index >= 0) db[collection][index] = row;
     else db[collection].push(row);
     await writeDb(db);
-    sendJson(res, index >= 0 ? 200 : 201, { data: row, ...dataStoreInfo() });
+    sendJson(res, index >= 0 ? 200 : 201, {
+      data: publicRows(collection, [row])[0],
+      ...dataStoreInfo(),
+    });
     return;
   }
 

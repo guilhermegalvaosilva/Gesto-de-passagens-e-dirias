@@ -300,7 +300,7 @@ export function Dashboard({ requests }) {
     .sort((a, b) => a.priority - b.priority || a.days - b.days)
     .slice(0, 6);
 
-  const projectRows = topEntries(requests, (item) => item.metaProjeto || item.idFiotec, 5);
+  const sectorRows = topEntries(requests, (item) => item.setorFiocruz, 5);
   const destinationRows = topEntries(passageRows, (item) => item.localDestino, 5);
   const last = requests[0] ? createdAtDisplay(requests[0]) : "-";
 
@@ -351,10 +351,10 @@ export function Dashboard({ requests }) {
             empty="Nenhum destino identificado."
           />
           <BarList
-            title="Projetos mais acionados"
-            rows={projectRows}
+            title="Setores mais acionados"
+            rows={sectorRows}
             total={total}
-            empty="Nenhum projeto identificado."
+            empty="Nenhum setor identificado."
           />
         </div>
       </div>

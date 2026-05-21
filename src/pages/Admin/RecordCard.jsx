@@ -1,7 +1,12 @@
 import { useState } from "react";
 
 import { labels } from "../../data/formData";
-import { createdAtDisplay, displayValue, formatDate } from "../../utils/formatters";
+import {
+  createdAtDisplay,
+  displayValue,
+  formatDate,
+  visibleMetaProjeto,
+} from "../../utils/formatters";
 import { generatePDF } from "../../utils/pdf";
 
 const recordGroups = [
@@ -107,7 +112,7 @@ export function RecordCard({ item, onDelete }) {
         </div>
         <div>
           <span>Projeto</span>
-          <strong>{item.metaProjeto || item.idFiotec || "-"}</strong>
+          <strong>{item.idFiotec || visibleMetaProjeto(item.metaProjeto) || "-"}</strong>
         </div>
       </div>
 
