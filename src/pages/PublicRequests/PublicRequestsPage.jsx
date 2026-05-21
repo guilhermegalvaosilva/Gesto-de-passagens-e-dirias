@@ -90,28 +90,27 @@ function NotificationMetric({ label, value, note }) {
 }
 
 function PublicChangesView({ loading, logs }) {
-  const todayLogs = logs.filter(
-    (log) => isToday(log.dataAlteracao) && isEditionAuditLog(log),
-  );
+  const editionLogs = logs.filter(isEditionAuditLog);
+  const todayLogs = editionLogs.filter((log) => isToday(log.dataAlteracao));
 
   return (
     <div className="admin-table-panel audit-panel public-activity-panel">
       <div className="panel-heading">
         <div>
-          <span className="section-kicker">Alterações do dia</span>
+          <span className="section-kicker">Alterações registradas</span>
           <h3>Histórico de alterações</h3>
           <p className="table-note">
             Veja o campo alterado, o valor antigo e o valor informado na alteração.
           </p>
         </div>
         <div className="audit-count">
-          <strong>{todayLogs.length}</strong>
-          <span>hoje</span>
+          <strong>{editionLogs.length}</strong>
+          <span>{todayLogs.length} hoje</span>
         </div>
       </div>
 
       {loading && <div className="empty-records">Carregando alterações...</div>}
-      {!loading && todayLogs.length ? (
+      {!loading && editionLogs.length ? (
         <div className="audit-table-wrapper">
           <table className="audit-table">
             <thead>
@@ -122,7 +121,7 @@ function PublicChangesView({ loading, logs }) {
               </tr>
             </thead>
             <tbody>
-              {todayLogs.map((log) => (
+              {editionLogs.map((log) => (
                 <tr key={log.id}>
                   {auditColumns.map(([key]) => (
                     <td key={key}>{log[key] || "-"}</td>
@@ -133,8 +132,8 @@ function PublicChangesView({ loading, logs }) {
           </table>
         </div>
       ) : null}
-      {!loading && !todayLogs.length && (
-        <div className="empty-records">Nenhuma alteração registrada hoje.</div>
+      {!loading && !editionLogs.length && (
+        <div className="empty-records">Nenhuma alteração registrada.</div>
       )}
     </div>
   );
@@ -219,8 +218,9 @@ function PublicRequestCard({ item }) {
   const [logsLoaded, setLogsLoaded] = useState(false);
   const [logMessage, setLogMessage] = useState("");
 
-  const loadLogs = useCallback(async () => {
-    if (logsLoaded || loadingLogs) return;
+  const loadLogs = useCallback(async (force = false) => {
+    if (!force && logsLoaded) return;
+    if (loadingLogs) return;
     try {
       setLoadingLogs(true);
       setLogMessage("");
@@ -241,7 +241,7 @@ function PublicRequestCard({ item }) {
   function toggleDetails() {
     const nextExpanded = !expanded;
     setExpanded(nextExpanded);
-    if (nextExpanded) void loadLogs();
+    if (nextExpanded) void loadLogs(true);
   }
 
   return (
@@ -489,7 +489,7 @@ export function PublicRequestsPage({ onBack }) {
 
   function openView(view) {
     setActiveView(view);
-    if (view !== "solicitacoes") void loadActivityLogs();
+    if (view !== "solicitacoes") void loadActivityLogs(true);
   }
 
   function refreshCurrentView() {

@@ -2,27 +2,26 @@ import { auditColumns } from "../../data/formData";
 import { isEditionAuditLog, isToday } from "../../utils/formatters";
 
 export function AuditPanel({ logs }) {
-  const todayLogs = logs.filter(
-    (log) => isToday(log.dataAlteracao) && isEditionAuditLog(log),
-  );
+  const editionLogs = logs.filter(isEditionAuditLog);
+  const todayLogs = editionLogs.filter((log) => isToday(log.dataAlteracao));
 
   return (
     <section className="dashboard-section admin-panel active">
       <div className="admin-table-panel audit-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-kicker">Alterações do dia</span>
+            <span className="section-kicker">Alterações registradas</span>
             <h3>Histórico de alterações</h3>
             <p className="table-note">
               Mostra o campo alterado, o valor antigo e o valor informado na alteração.
             </p>
           </div>
           <div className="audit-count">
-            <strong>{todayLogs.length}</strong>
-            <span>hoje</span>
+            <strong>{editionLogs.length}</strong>
+            <span>{todayLogs.length} hoje</span>
           </div>
         </div>
-        {todayLogs.length ? (
+        {editionLogs.length ? (
           <div className="audit-table-wrapper">
             <table className="audit-table">
               <thead>
@@ -33,7 +32,7 @@ export function AuditPanel({ logs }) {
                 </tr>
               </thead>
               <tbody>
-                {todayLogs.map((log) => (
+                {editionLogs.map((log) => (
                   <tr key={log.id}>
                     {auditColumns.map(([key]) => (
                       <td key={key}>{log[key] || "-"}</td>
@@ -44,7 +43,7 @@ export function AuditPanel({ logs }) {
             </table>
           </div>
         ) : (
-          <div className="empty-records">Nenhuma alteração registrada hoje.</div>
+          <div className="empty-records">Nenhuma alteração registrada.</div>
         )}
       </div>
     </section>

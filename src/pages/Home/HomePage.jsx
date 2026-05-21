@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 
 import logoHorizontal from "../../assets/Captura de tela 2026-04-14 121940.png";
-import fiocruzBuilding from "../../assets/fiocruz_brasilia.png";
 import logoFiocruzBrasiliaHorizontal from "../../assets/H1.png";
 import logoFiocruzBrasiliaVertical from "../../assets/V2.png";
 import logoFiocruz from "../../assets/download.png";
 
 const carouselImages = [
-  { src: fiocruzBuilding, alt: "Prédio da Fiocruz Brasília" },
   { src: logoFiocruzBrasiliaHorizontal, alt: "Marca Fiocruz Brasília horizontal" },
   { src: logoFiocruzBrasiliaVertical, alt: "Marca Fiocruz Brasília vertical" },
   { src: logoFiocruz, alt: "Marca Fiocruz" },

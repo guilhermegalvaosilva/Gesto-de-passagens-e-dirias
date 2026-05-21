@@ -6,6 +6,7 @@ import {
   normalizedFilterText,
   parseMoneyValue,
 } from "../../utils/formatters";
+import { StatCard } from "../../components/common/StatCard";
 
 const WORKFLOW_STATUSES = ["Recebida", "Em análise", "Pendente", "Aprovada", "Concluída"];
 const OPEN_STATUS_KEYS = new Set(["recebida", "em analise", "pendente"]);
@@ -68,16 +69,6 @@ function routeLabel(item) {
   const origin = normalizeText(item.localOrigem) || "-";
   const destination = normalizeText(item.localDestino) || "-";
   return origin === "-" && destination === "-" ? "Rota não informada" : `${origin} - ${destination}`;
-}
-
-function Metric({ title, value, note, tone }) {
-  return (
-    <article className={`dashboard-metric ${tone || ""}`}>
-      <span>{title}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
-    </article>
-  );
 }
 
 function OperationalSummaryChart({ rows }) {
@@ -213,45 +204,16 @@ function RiskQueue({ rows }) {
   );
 }
 
-function RequirementSplit({ passageRows, dailyRows, bothRows, total }) {
-  const rows = [
-    ["Passagens", passageRows.length],
-    ["Diárias", dailyRows.length],
-    ["Passagens + diárias", bothRows.length],
-  ];
-
-  return (
-    <article className="chart-card dashboard-chart-card">
-      <div className="chart-heading">
-        <h4>Perfil das solicitações</h4>
-      </div>
-      <div className="dashboard-profile-list">
-        {rows.map(([label, value]) => (
-          <div className="dashboard-profile-row" key={label}>
-            <div>
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </div>
-            <div aria-hidden="true">
-              <span style={{ width: `${percent(value, total)}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
 export function Dashboard({ requests }) {
   const total = requests.length;
   const openRows = requests.filter((item) => OPEN_STATUS_KEYS.has(statusKey(item)));
   const closedRows = requests.filter((item) => CLOSED_STATUS_KEYS.has(statusKey(item)));
+  const approvedCount = requests.filter((item) => statusKey(item) === "aprovada").length;
+  const rejectedCount = requests.filter((item) => statusKey(item) === "cancelada").length;
   const passageRows = requests.filter(hasPassage);
   const dailyRows = requests.filter(hasDaily);
-  const bothRows = requests.filter((item) => hasPassage(item) && hasDaily(item));
   const dailyRowsWithValue = dailyRows.filter((item) => parseMoneyValue(item.valorMaximoDiaria) > 0);
   const totalDaily = dailyRows.reduce((sum, item) => sum + parseMoneyValue(item.valorMaximoDiaria), 0);
-  const averageDaily = dailyRowsWithValue.length ? totalDaily / dailyRowsWithValue.length : 0;
   const missingFlight = passageRows.filter((item) => !normalizeText(item.vooIda));
   const missingDailyValue = dailyRows.filter((item) => parseMoneyValue(item.valorMaximoDiaria) === 0);
   const overdue = requests.filter((item) => {
@@ -338,7 +300,6 @@ export function Dashboard({ requests }) {
     .sort((a, b) => a.priority - b.priority || a.days - b.days)
     .slice(0, 6);
 
-  const sectorRows = topEntries(requests, (item) => item.setorFiocruz, 5);
   const projectRows = topEntries(requests, (item) => item.metaProjeto || item.idFiotec, 5);
   const destinationRows = topEntries(passageRows, (item) => item.localDestino, 5);
   const last = requests[0] ? createdAtDisplay(requests[0]) : "-";
@@ -360,10 +321,10 @@ export function Dashboard({ requests }) {
         </div>
 
         <div className="dashboard-metric-grid">
-          <Metric title="Fila aberta" value={openRows.length} note={`${percent(openRows.length, total)}% em andamento`} />
-          <Metric title="Viagens em 7 dias" value={next7.length + dueToday.length} note={`${overdue.length} vencida(s) não encerrada(s)`} tone="attention" />
-          <Metric title="Passagens sem voo" value={missingFlight.length} note={`${passageRows.length} pedido(s) com passagem`} />
-          <Metric title="Diárias estimadas" value={compactCurrency(totalDaily)} note={`Média ${formatCurrency(averageDaily)}`} />
+          <StatCard title="Total de solicitações" value={total} note="Total de registros no sistema" />
+          <StatCard title="Pendentes" value={openRows.length} note={`${percent(openRows.length, total)}% em andamento`} />
+          <StatCard title="Aprovadas" value={approvedCount} note="Solicitações aprovadas" />
+          <StatCard title="Recusadas" value={rejectedCount} note="Solicitações canceladas" tone="attention" />
         </div>
 
         <div className="dashboard-grid-primary">
@@ -376,30 +337,18 @@ export function Dashboard({ requests }) {
           <RiskQueue rows={criticalRows} />
         </div>
 
-        <div className="dashboard-visual-grid">
+        <div className="dashboard-visual-grid dashboard-visual-grid-executive">
           <BarList
             title="Status da fila"
             rows={Object.entries(statusCounts)}
             total={total}
             empty="Nenhuma solicitação cadastrada."
           />
-          <RequirementSplit
-            passageRows={passageRows}
-            dailyRows={dailyRows}
-            bothRows={bothRows}
-            total={total}
-          />
           <BarList
             title="Destinos mais solicitados"
             rows={destinationRows}
             total={passageRows.length}
             empty="Nenhum destino identificado."
-          />
-          <BarList
-            title="Setores com mais demandas"
-            rows={sectorRows}
-            total={total}
-            empty="Nenhum setor identificado."
           />
           <BarList
             title="Projetos mais acionados"

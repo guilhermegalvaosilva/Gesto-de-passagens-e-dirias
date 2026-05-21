@@ -82,10 +82,18 @@ export function isEditionAuditLog(log) {
   const type = normalizedFilterText(log.tipoAlteracao);
   const origin = normalizedFilterText(log.origem);
   const reason = normalizedFilterText(log.motivoAlteracao);
-  if (type.includes("criacao") || reason.startsWith("novo formulario")) return false;
+  const field = normalizedFilterText(log.campoAlterado);
+  const hasChangedValue = Boolean(normalizeText(log.valorOriginal) || normalizeText(log.valorNovo));
+  const isCreation =
+    type.includes("criacao") ||
+    reason.startsWith("novo formulario") ||
+    (field === "formulario" && origin.includes("formulario publico"));
+  if (isCreation) return false;
   return (
     type.includes("edicao") ||
+    type.includes("alteracao") ||
     origin.includes("edicao") ||
-    reason.includes("atualizado")
+    reason.includes("atualizado") ||
+    (field && field !== "formulario" && hasChangedValue)
   );
 }

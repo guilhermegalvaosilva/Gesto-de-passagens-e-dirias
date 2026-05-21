@@ -24,6 +24,7 @@ const FIREBASE_CONFIG_PATH =
   path.join(ROOT_DIR, "js", "firebase-config.js");
 const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || "(default)";
 const DATA_COLLECTIONS = ["solicitacoes", "alteracoes", "admins", "sessions"];
+const PRESERVED_COLLECTIONS = new Set(["solicitacoes", "alteracoes"]);
 const FIRESTORE_COLLECTION_NAMES = {
   solicitacoes:
     process.env.FIRESTORE_SOLICITACOES_COLLECTION ||
@@ -461,17 +462,22 @@ function createFirestoreStore(config) {
     async write(db) {
       for (const collection of DATA_COLLECTIONS) {
         const nextRows = Array.isArray(db[collection]) ? db[collection] : [];
-        const nextIds = new Set(
-          nextRows.map((row) => documentIdForRow(collection, row)),
-        );
-        const currentRows = await readCollection(collection);
-        await Promise.all(
-          currentRows
-            .filter((row) => !nextIds.has(documentIdForRow(collection, row)))
-            .map((row) => deleteDocument(collection, documentIdForRow(collection, row))),
-        );
+        if (!PRESERVED_COLLECTIONS.has(collection)) {
+          const nextIds = new Set(
+            nextRows.map((row) => documentIdForRow(collection, row)),
+          );
+          const currentRows = await readCollection(collection);
+          await Promise.all(
+            currentRows
+              .filter((row) => !nextIds.has(documentIdForRow(collection, row)))
+              .map((row) => deleteDocument(collection, documentIdForRow(collection, row))),
+          );
+        }
         await Promise.all(nextRows.map((row) => writeDocument(collection, row)));
       }
+    },
+    async delete(collection, id) {
+      await deleteDocument(collection, id);
     },
   };
 }
@@ -555,6 +561,13 @@ const localJsonStore = {
   async write(db) {
     await writeLocalDb(db);
   },
+  async delete(collection, id) {
+    const db = normalizeDb(await readLocalDb()).db;
+    db[collection] = (db[collection] || []).filter(
+      (item) => String(documentIdForRow(collection, item)) !== String(id),
+    );
+    await writeLocalDb(db);
+  },
 };
 
 async function getDataStore() {
@@ -601,6 +614,19 @@ async function readDb() {
 async function writeDb(db) {
   const store = await getDataStore();
   await store.write(normalizeDb(db).db);
+}
+
+async function deleteDbRow(collection, id) {
+  const store = await getDataStore();
+  if (typeof store.delete === "function") {
+    await store.delete(collection, id);
+    return;
+  }
+  const db = await readDb();
+  db[collection] = (db[collection] || []).filter(
+    (item) => String(documentIdForRow(collection, item)) !== String(id),
+  );
+  await writeDb(db);
 }
 
 function publicAdmin(admin) {
@@ -1080,12 +1106,11 @@ async function handleApi(req, res, url) {
   if (req.method === "DELETE" && id) {
     const authContext = await requireAuth(req, res);
     if (!authContext) return;
-    const before = authContext.db[collection].length;
-    authContext.db[collection] = authContext.db[collection].filter(
-      (item) => String(item.id) !== String(id),
+    const existed = authContext.db[collection].some(
+      (item) => String(documentIdForRow(collection, item)) === String(id),
     );
-    await writeDb(authContext.db);
-    sendJson(res, 200, { deleted: before !== authContext.db[collection].length });
+    await deleteDbRow(collection, id);
+    sendJson(res, 200, { deleted: existed });
     return;
   }
 

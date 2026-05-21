@@ -119,10 +119,6 @@
   object-fit: contain;
 }
 
-.home-carousel-slide:first-child img {
-  object-fit: cover;
-}
-
 .home-carousel-dots {
   position: absolute;
   left: 50%;

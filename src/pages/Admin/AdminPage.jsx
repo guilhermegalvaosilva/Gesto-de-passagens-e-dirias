@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Message } from "../../components/common/Message";
-import { REQUESTS_PAGE_SIZE } from "../../config/appConfig";
-import { REQUEST_STATUS_OPTIONS } from "../../config/requestStatus";
 import { STORAGE_KEYS } from "../../config/storageKeys";
 import { apiRequest, logoutAdmin, savedSession, validateSession } from "../../services/api";
 import { exportRequestsWorkbook } from "../../utils/excel";
-import { isToday, normalizedFilterText } from "../../utils/formatters";
 import { AdminSidebar } from "./AdminSidebar";
 import { AuditPanel } from "./AuditPanel";
+import { AlertsPanel } from "./AlertsPanel";
 import { Dashboard } from "./Dashboard";
 import { FinancePanel } from "./FinancePanel";
 import { FlightsPanel } from "./FlightsPanel";
@@ -21,12 +19,6 @@ export function AdminPage({ onBack }) {
   );
   const [requests, setRequests] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("all");
-  const [needFilter, setNeedFilter] = useState("all");
-  const [sectorFilter, setSectorFilter] = useState("all");
-  const [page, setPage] = useState(1);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
@@ -73,70 +65,17 @@ export function AdminPage({ onBack }) {
     return () => window.clearInterval(interval);
   }, [loadData]);
 
-  const filteredRequests = useMemo(() => {
-    let rows = search
-      ? requests.filter((item) =>
-          JSON.stringify(item).toLowerCase().includes(search.toLowerCase()),
-        )
-      : requests;
-    if (statusFilter !== "all") {
-      rows = rows.filter((item) => (item.status || "Recebida") === statusFilter);
-    }
-    if (dateFilter === "today") {
-      rows = rows.filter((item) => isToday(item.createdAtIso || item.createdAt));
-    }
-    if (needFilter !== "all") {
-      rows = rows.filter(
-        (item) => normalizedFilterText(item.necessidade) === normalizedFilterText(needFilter),
-      );
-    }
-    if (sectorFilter !== "all") {
-      rows = rows.filter((item) => (item.setorFiocruz || "Não informado") === sectorFilter);
-    }
-    return rows;
-  }, [requests, search, statusFilter, dateFilter, needFilter, sectorFilter]);
-
-  const sectorOptions = useMemo(
-    () =>
-      [...new Set(requests.map((item) => item.setorFiocruz || "Não informado"))].sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [requests],
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / REQUESTS_PAGE_SIZE));
-  const pageRows = filteredRequests.slice(
-    (page - 1) * REQUESTS_PAGE_SIZE,
-    page * REQUESTS_PAGE_SIZE,
-  );
-
   function setTab(tab) {
     setActiveTab(tab);
-    setPage(1);
   }
 
   function exportWorkbook() {
-    const rows = filteredRequests.length ? filteredRequests : requests;
-    exportRequestsWorkbook(rows);
+    exportRequestsWorkbook(requests);
   }
 
   async function deleteRequest(id) {
     if (!confirm("Tem certeza que deseja apagar este registro?")) return;
     await apiRequest(`/solicitacoes/${encodeURIComponent(id)}`, { method: "DELETE" });
-    await loadData();
-  }
-
-  async function updateRequestStatus(item, status) {
-    const next = {
-      ...item,
-      status,
-      updatedAt: new Date().toISOString(),
-      updatedAtClient: new Date().toLocaleString("pt-BR"),
-    };
-    await apiRequest(`/solicitacoes/${encodeURIComponent(item.id)}`, {
-      method: "PUT",
-      body: JSON.stringify(next),
-    });
     await loadData();
   }
 
@@ -203,32 +142,14 @@ export function AdminPage({ onBack }) {
           {loading && <div className="empty-records">Carregando dados...</div>}
           {activeTab === "dashboard" && <Dashboard requests={requests} />}
           {activeTab === "solicitacoes" && (
-            <RequestsPanel
-              search={search}
-              setSearch={setSearch}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              dateFilter={dateFilter}
-              setDateFilter={setDateFilter}
-              needFilter={needFilter}
-              setNeedFilter={setNeedFilter}
-              sectorFilter={sectorFilter}
-              setSectorFilter={setSectorFilter}
-              sectorOptions={sectorOptions}
-              statusOptions={REQUEST_STATUS_OPTIONS}
-              rows={pageRows}
-              total={filteredRequests.length}
-              page={page}
-              totalPages={totalPages}
-              setPage={setPage}
-              onDelete={deleteRequest}
-              onStatusChange={updateRequestStatus}
-            />
+            <RequestsPanel rows={requests} onDelete={deleteRequest} />
           )}
+          {activeTab === "alertas" && <AlertsPanel logs={auditLogs} />}
           {activeTab === "alteracoes" && <AuditPanel logs={auditLogs} />}
           {activeTab === "notificacoes" && <NotificationsPanel logs={auditLogs} />}
           {activeTab === "financeiro" && <FinancePanel requests={requests} />}
-          {activeTab === "voos" && <FlightsPanel requests={requests} />}
+          {activeTab === "passagens" && <FlightsPanel requests={requests} />}
+          {activeTab === "diarias" && <FinancePanel requests={requests} />}
         </div>
       </div>
     </section>
