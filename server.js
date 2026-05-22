@@ -487,6 +487,13 @@ function supabaseConfigReady(config) {
   return Boolean(config.url && config.key);
 }
 
+function supabaseConfigRequired() {
+  return (
+    process.env.SUPABASE_LOCAL_FALLBACK === "false" ||
+    process.env.NODE_ENV === "production"
+  );
+}
+
 function supabaseTableName(collection) {
   return SUPABASE_TABLE_NAMES[collection] || collection;
 }
@@ -801,6 +808,12 @@ async function getDataStore() {
       dataStoreState = { store: localJsonStore, warning };
       return localJsonStore;
     }
+  }
+
+  if (supabaseConfigRequired()) {
+    throw new Error(
+      "Supabase nao configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY para persistir os dados.",
+    );
   }
 
   const firebaseConfig = await loadFirebaseConfig();
