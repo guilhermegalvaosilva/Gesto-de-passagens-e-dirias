@@ -16,8 +16,7 @@ export function isProjectCodeValue(value) {
 }
 
 export function visibleMetaProjeto(value) {
-  const text = normalizeText(value);
-  return isProjectCodeValue(text) ? "" : text;
+  return normalizeText(value);
 }
 
 export function formatDate(value) {

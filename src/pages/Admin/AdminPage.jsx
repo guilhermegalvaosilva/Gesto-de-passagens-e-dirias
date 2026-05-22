@@ -94,7 +94,7 @@ export function AdminPage({ onBack }) {
           onLogout={logout}
         />
         <div className="dashboard-content">
-          <div className="dashboard-header">
+          <div className="dashboard-header admin-command-bar">
             <div className="dashboard-title-block">
               <span className="section-kicker">Visão administrativa</span>
               <h2>Painel administrativo</h2>
@@ -104,25 +104,27 @@ export function AdminPage({ onBack }) {
               </p>
             </div>
             <div className="dashboard-header-meta">
-              <div className="admin-session-card">
-                <span className="status-dot" />
-                <div>
-                  <small>Usuário ativo</small>
-                  <strong>{savedSession().login || "admin"}</strong>
+              <div className="admin-session-row" aria-label="Sessão administrativa">
+                <div className="admin-session-card">
+                  <span className="status-dot" />
+                  <div>
+                    <small>Usuário</small>
+                    <strong>{savedSession().login || "admin"}</strong>
+                  </div>
                 </div>
-              </div>
-              <div className="admin-session-card">
-                <span className="status-dot" />
-                <div>
-                  <small>Atualizado</small>
-                  <strong>
-                    {lastUpdatedAt
-                      ? lastUpdatedAt.toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "..."}
-                  </strong>
+                <div className="admin-session-card">
+                  <span className="status-dot" />
+                  <div>
+                    <small>Atualizado</small>
+                    <strong>
+                      {lastUpdatedAt
+                        ? lastUpdatedAt.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "..."}
+                    </strong>
+                  </div>
                 </div>
               </div>
               <div className="dashboard-actions">

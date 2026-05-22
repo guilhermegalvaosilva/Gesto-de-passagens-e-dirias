@@ -21,7 +21,6 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 COPY --from=build /app/src/data ./src/data
-COPY --from=build /app/js ./js
 COPY server.js ./server.js
 
 RUN mkdir -p /app/data

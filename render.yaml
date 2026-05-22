@@ -9,5 +9,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: FIREBASE_LOCAL_FALLBACK
+      - key: SUPABASE_LOCAL_FALLBACK
         value: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

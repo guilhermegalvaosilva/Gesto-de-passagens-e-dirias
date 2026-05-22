@@ -13,8 +13,8 @@ export function Topbar() {
         </div>
       </div>
       <div className="topbar-meta">
-        <span>Sistema online</span>
-        <strong>Firebase + API</strong>
+        <span>Status</span>
+        <strong>Sistema online</strong>
       </div>
     </header>
   );

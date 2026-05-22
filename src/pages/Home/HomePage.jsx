@@ -65,17 +65,6 @@ export function HomePage({
               </figure>
             ))}
           </div>
-          <div className="home-carousel-dots">
-            {carouselImages.map((image, index) => (
-              <button
-                aria-label={`Mostrar imagem ${index + 1}`}
-                className={activeSlide === index ? "active" : ""}
-                key={image.src}
-                type="button"
-                onClick={() => setActiveSlide(index)}
-              />
-            ))}
-          </div>
         </div>
       </div>
     </section>

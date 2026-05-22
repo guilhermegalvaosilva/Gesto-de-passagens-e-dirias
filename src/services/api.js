@@ -1,6 +1,5 @@
 import { API_BASE } from "../config/appConfig";
 import { STORAGE_KEYS } from "../config/storageKeys";
-import { canUseFirebaseRest, firebaseApiRequest } from "./firebaseRest";
 import { readJSON, removeStorage, writeJSON } from "./storage";
 
 export function savedSession() {
@@ -20,10 +19,6 @@ export function saveSession(payload) {
   });
 }
 
-function shouldUseFirebaseFallback(path) {
-  return canUseFirebaseRest() && !path.startsWith("/auth/");
-}
-
 export async function apiRequest(path, options = {}) {
   const token = savedSession().token;
   let response;
@@ -37,13 +32,11 @@ export async function apiRequest(path, options = {}) {
       },
     });
   } catch {
-    if (canUseFirebaseRest()) return firebaseApiRequest(path, options);
     throw new Error("Backend indisponível. Inicie o servidor com `npm run dev:api` e tente novamente.");
   }
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (shouldUseFirebaseFallback(path)) return firebaseApiRequest(path, options);
     throw new Error(payload.error || "Erro ao acessar o backend.");
   }
   return payload;
@@ -58,17 +51,7 @@ export async function loginAdmin(login, password) {
     saveSession(payload);
     return payload.user;
   } catch (error) {
-    if (!canUseFirebaseRest()) throw error;
-    if (login !== "admin" || password !== "123456") {
-      throw new Error("Login ou senha inválidos.", { cause: error });
-    }
-    const payload = {
-      token: "firebase-rest-session",
-      expiresAt: Date.now() + 8 * 60 * 60 * 1000,
-      user: { login: "admin" },
-    };
-    saveSession(payload);
-    return payload.user;
+    throw new Error(error.message || "Login ou senha inválidos.", { cause: error });
   }
 }
 
@@ -81,9 +64,6 @@ export async function validateSession() {
   }
 
   try {
-    if (session.token === "firebase-rest-session" && canUseFirebaseRest()) {
-      return { login: session.login || "admin" };
-    }
     const payload = await apiRequest("/auth/me");
     return payload.user;
   } catch {

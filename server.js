@@ -1,4 +1,5 @@
 ﻿import http from "node:http";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +13,30 @@ import { linkedProjects } from "./src/data/formData.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+function loadDotEnv() {
+  const envPath = path.join(__dirname, ".env");
+  if (!fsSync.existsSync(envPath)) return;
+
+  const source = fsSync.readFileSync(envPath, "utf8");
+  source.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0) return;
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed
+      .slice(separatorIndex + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, "");
+
+    if (!process.env[key]) process.env[key] = value;
+  });
+}
+
+loadDotEnv();
 
 const PORT = Number(process.env.PORT || 3002);
 const ROOT_DIR = __dirname;
@@ -34,6 +59,12 @@ const FIRESTORE_COLLECTION_NAMES = {
   admins: process.env.FIRESTORE_ADMINS_COLLECTION || "admins",
   sessions: process.env.FIRESTORE_SESSIONS_COLLECTION || "sessions",
 };
+const SUPABASE_TABLE_NAMES = {
+  solicitacoes: process.env.SUPABASE_SOLICITACOES_TABLE || "solicitacoes",
+  alteracoes: process.env.SUPABASE_ALTERACOES_TABLE || "alteracoes",
+  admins: process.env.SUPABASE_ADMINS_TABLE || "admins",
+  sessions: process.env.SUPABASE_SESSIONS_TABLE || "sessions",
+};
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const DEFAULT_ADMIN_LOGIN = process.env.DEFAULT_ADMIN_LOGIN || "admin";
 const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || "123456";
@@ -41,6 +72,7 @@ const MAX_BODY_SIZE_BYTES = 1024 * 1024;
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_RATE_LIMIT_ATTEMPTS = 12;
 const FIRESTORE_TIMEOUT_MS = 8000;
+const SUPABASE_TIMEOUT_MS = 8000;
 const loginAttempts = new Map();
 let dataStoreState = null;
 
@@ -192,8 +224,7 @@ function isProjectCodeValue(value) {
 }
 
 function visibleMetaProjeto(value) {
-  const text = normalizeText(value);
-  return isProjectCodeValue(text) ? "" : text;
+  return normalizeText(value);
 }
 
 function publicProject(project) {
@@ -432,6 +463,148 @@ function documentIdForRow(collection, row) {
   return randomUUID();
 }
 
+function loadSupabaseConfig() {
+  const url = String(process.env.SUPABASE_URL || "").replace(/\/+$/, "");
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    "";
+  const projectId = (() => {
+    try {
+      return url ? new URL(url).hostname.split(".")[0] : "";
+    } catch {
+      return "";
+    }
+  })();
+  return {
+    url,
+    key,
+    projectId,
+  };
+}
+
+function supabaseConfigReady(config) {
+  return Boolean(config.url && config.key);
+}
+
+function supabaseTableName(collection) {
+  return SUPABASE_TABLE_NAMES[collection] || collection;
+}
+
+function supabaseEndpoint(config, table, query = "") {
+  return `${config.url}/rest/v1/${encodeURIComponent(table)}${query}`;
+}
+
+async function supabaseRequest(config, method, table, query = "", body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SUPABASE_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(supabaseEndpoint(config, table, query), {
+      method,
+      signal: controller.signal,
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation,resolution=merge-duplicates",
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(`Supabase sem resposta em ${SUPABASE_TIMEOUT_MS / 1000}s.`, {
+        cause: error,
+      });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      payload?.message ||
+      payload?.error_description ||
+      `Supabase retornou HTTP ${response.status}.`;
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
+
+  return payload;
+}
+
+function rowFromSupabaseRecord(record = {}) {
+  return {
+    ...(record.data && typeof record.data === "object" ? record.data : {}),
+    id: record.id,
+  };
+}
+
+function createSupabaseStore(config) {
+  async function readCollection(collection) {
+    const table = supabaseTableName(collection);
+    const rows = await supabaseRequest(config, "GET", table, "?select=id,data");
+    return Array.isArray(rows) ? rows.map(rowFromSupabaseRecord) : [];
+  }
+
+  async function upsertDocument(collection, row) {
+    const table = supabaseTableName(collection);
+    const id = documentIdForRow(collection, row);
+    await supabaseRequest(config, "POST", table, "?on_conflict=id", {
+      id,
+      data: { ...row, id },
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  async function deleteDocument(collection, id) {
+    const table = supabaseTableName(collection);
+    await supabaseRequest(
+      config,
+      "DELETE",
+      table,
+      `?id=eq.${encodeURIComponent(id)}`,
+    );
+  }
+
+  return {
+    mode: "supabase",
+    projectId: config.projectId,
+    collections: SUPABASE_TABLE_NAMES,
+    async ping() {
+      await readCollection("admins");
+    },
+    async read() {
+      const entries = await Promise.all(
+        DATA_COLLECTIONS.map(async (collection) => [
+          collection,
+          await readCollection(collection),
+        ]),
+      );
+      return Object.fromEntries(entries);
+    },
+    async write(db) {
+      for (const collection of DATA_COLLECTIONS) {
+        const nextRows = Array.isArray(db[collection]) ? db[collection] : [];
+        const nextIds = new Set(
+          nextRows.map((row) => documentIdForRow(collection, row)),
+        );
+        const currentRows = await readCollection(collection);
+        await Promise.all(
+          currentRows
+            .filter((row) => !nextIds.has(documentIdForRow(collection, row)))
+            .map((row) => deleteDocument(collection, documentIdForRow(collection, row))),
+        );
+        await Promise.all(nextRows.map((row) => upsertDocument(collection, row)));
+      }
+    },
+  };
+}
+
 function createFirestoreStore(config) {
   async function readCollection(collection) {
     const firestoreCollection = firestoreCollectionName(collection);
@@ -613,8 +786,25 @@ const localJsonStore = {
 async function getDataStore() {
   if (dataStoreState) return dataStoreState.store;
 
+  const supabaseConfig = loadSupabaseConfig();
+  if (supabaseConfigReady(supabaseConfig)) {
+    const supabaseStore = createSupabaseStore(supabaseConfig);
+    try {
+      await supabaseStore.ping();
+      dataStoreState = { store: supabaseStore, warning: "" };
+      console.log(`Banco Supabase conectado: ${supabaseConfig.projectId}`);
+      return supabaseStore;
+    } catch (error) {
+      if (process.env.SUPABASE_LOCAL_FALLBACK === "false") throw error;
+      const warning = `Supabase indisponível (${error.message}). Usando db.json local.`;
+      console.error(warning);
+      dataStoreState = { store: localJsonStore, warning };
+      return localJsonStore;
+    }
+  }
+
   const firebaseConfig = await loadFirebaseConfig();
-  if (firebaseConfigReady(firebaseConfig)) {
+  if (firebaseConfigReady(firebaseConfig) && process.env.FIREBASE_ENABLED === "true") {
     const firestoreStore = createFirestoreStore(firebaseConfig);
     try {
       await firestoreStore.ping();
@@ -817,10 +1007,6 @@ function validateRequestPayload(row) {
     errors.push("ID FIOTEC não localizado na lista de projetos.");
   }
 
-  if (isProjectCodeValue(row.metaProjeto)) {
-    errors.push("Informe apenas a meta do projeto.");
-  }
-
   if (row.status && !REQUEST_STATUS_OPTIONS.includes(row.status)) {
     errors.push(`Status inválido. Use: ${REQUEST_STATUS_OPTIONS.join(", ")}.`);
   }
@@ -849,7 +1035,6 @@ function enrichRequestPayload(row, previous) {
       previous?.createdAtClient || row.createdAtClient || now.toLocaleString("pt-BR"),
     updatedAt: previous ? now.toISOString() : row.updatedAt || "",
     updatedAtClient: previous ? now.toLocaleString("pt-BR") : row.updatedAtClient || "",
-    metaProjeto: visibleMetaProjeto(row.metaProjeto),
     coordenador: project?.coordenador || row.coordenador,
     setorFiocruz: project?.setorFiocruz || row.setorFiocruz,
     projetoVinculado: publicProject(project || row.projetoVinculado),

@@ -51,8 +51,8 @@ function App() {
 
     apiRequest("/health")
       .then((payload) => {
-        if (payload.database === "firestore") {
-          setStorageMode("Firebase conectado");
+        if (payload.database === "supabase") {
+          setStorageMode("Supabase conectado");
           return;
         }
         if (payload.database === "local-json") {

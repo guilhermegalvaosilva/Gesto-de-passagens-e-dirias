@@ -27,21 +27,22 @@ admin / 123456
 
 ## Banco de dados
 
-O backend conecta ao Firebase Firestore usando `js/firebase-config.js` ou
-variaveis de ambiente:
+O backend conecta ao Supabase usando variaveis de ambiente no servidor:
 
 ```text
-FIREBASE_API_KEY
-FIREBASE_PROJECT_ID
-FIREBASE_AUTH_DOMAIN
-FIREBASE_APP_ID
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
 ```
 
-Colecoes usadas:
+Para rodar localmente, copie `.env.example` para `.env` e preencha os valores
+do seu projeto.
+
+Antes de iniciar, rode o SQL de `supabase.schema.sql` no SQL Editor do Supabase.
+Tabelas usadas:
 
 ```text
-solicitacoes_passagens_diarias
-alteracoes_solicitacoes
+solicitacoes
+alteracoes
 admins
 sessions
 ```
@@ -49,10 +50,10 @@ sessions
 Em producao, o `render.yaml` usa:
 
 ```text
-FIREBASE_LOCAL_FALLBACK=false
+SUPABASE_LOCAL_FALLBACK=false
 ```
 
-Assim o deploy so fica ativo quando o Firebase estiver acessivel.
+Assim o deploy so fica ativo quando o Supabase estiver acessivel.
 
 ## Deploy pelo GitHub
 

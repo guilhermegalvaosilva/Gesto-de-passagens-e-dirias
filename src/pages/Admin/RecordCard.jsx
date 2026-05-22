@@ -50,6 +50,8 @@ const recordGroups = [
   ],
 ];
 
+const formFieldCount = recordGroups.reduce((total, [, fields]) => total + fields.length, 0);
+
 export function RecordCard({ item, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const title = item.nomeCompleto || item.nomeEvento || "Solicitação sem nome";
@@ -70,6 +72,7 @@ export function RecordCard({ item, onDelete }) {
           <small>
             Criada em {createdAtDisplay(item)}
             {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
+            {` | ${formFieldCount} campos do formulário`}
           </small>
         </div>
         <div className="record-actions">
@@ -117,9 +120,16 @@ export function RecordCard({ item, onDelete }) {
       </div>
 
       <div className="record-card-body">
+        <div className="record-fields-total">
+          <strong>{formFieldCount}</strong>
+          <span>campos exibidos nesta solicitação</span>
+        </div>
         {recordGroups.map(([groupTitle, fields]) => (
           <div className="record-section" key={groupTitle}>
-            <strong>{groupTitle}</strong>
+            <div className="record-section-heading">
+              <strong>{groupTitle}</strong>
+              <span>{fields.length} campos</span>
+            </div>
             <div className="record-fields">
               {fields.map((field) => (
                 <div className="record-field" key={field}>

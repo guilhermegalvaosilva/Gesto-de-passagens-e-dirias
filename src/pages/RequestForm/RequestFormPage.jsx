@@ -13,11 +13,9 @@ import { apiRequest } from "../../services/api";
 import { removeStorage } from "../../services/storage";
 import {
   formatCurrencyInput,
-  isProjectCodeValue,
   normalizedFilterText,
   parseMoneyValue,
   todayInputValue,
-  visibleMetaProjeto,
 } from "../../utils/formatters";
 import { generatePDF } from "../../utils/pdf";
 import {
@@ -54,6 +52,8 @@ const PROGRESS_QUESTIONS = [
   "necessarioValorMaximoDiaria",
   "valorMaximoDiaria",
 ];
+
+const TOTAL_FORM_FIELDS = Object.keys(blankForm).length;
 
 function digitsOnly(value) {
   return String(value || "").replace(/\D/g, "");
@@ -136,10 +136,6 @@ function validateForm(form) {
     errors.push("Selecione um ID FIOTEC válido da lista de projetos.");
   }
 
-  if (isProjectCodeValue(form.metaProjeto)) {
-    errors.push("Informe apenas a meta do projeto.");
-  }
-
   if (!digitsOnly(form.banco))
     errors.push("Selecione um banco válido da lista.");
   if (!digitsOnly(form.agencia)) errors.push("Informe uma agência válida.");
@@ -207,11 +203,7 @@ export function RequestFormPage({ onBack, onConsult }) {
       );
       const item = payload.data;
       setEditing(item);
-      setForm({
-        ...blankForm,
-        ...item,
-        metaProjeto: visibleMetaProjeto(item.metaProjeto),
-      });
+      setForm({ ...blankForm, ...item });
       setEditId(item.id);
       setMessage({
         type: "success",
@@ -276,10 +268,10 @@ export function RequestFormPage({ onBack, onConsult }) {
           ? `Solicitação atualizada com sucesso. ${auditLogs.length} alteração(ões) registrada(s).${pdfMessage}`
           : `Solicitação enviada com sucesso. ID: ${data.id}.${pdfMessage}`,
       });
-      if (!editing && savedRequest.database === "firestore") {
+      if (!editing && savedRequest.database === "supabase") {
         setMessage({
           type: "success",
-          text: `Solicitação enviada com sucesso. ID: ${data.id} | Firebase confirmado.${pdfMessage}`,
+          text: `Solicitação enviada com sucesso. ID: ${data.id} | Supabase confirmado.${pdfMessage}`,
         });
       }
       setForm(blankForm);
@@ -335,7 +327,7 @@ export function RequestFormPage({ onBack, onConsult }) {
             </div>
             <small>
               {completedFields} de {PROGRESS_QUESTIONS.length} perguntas
-              preenchidas.
+              preenchidas. Formulário com {TOTAL_FORM_FIELDS} campos.
             </small>
           </div>
 
@@ -431,11 +423,11 @@ export function RequestFormPage({ onBack, onConsult }) {
             required
           />
           <Input
-            label="Meta do projeto"
+            label="Projeto ID / Meta"
             name="metaProjeto"
             value={form.metaProjeto}
             setField={setField}
-            placeholder="Informe a meta do projeto"
+            placeholder="Informe manualmente"
             required
           />
           <Input
@@ -454,9 +446,12 @@ export function RequestFormPage({ onBack, onConsult }) {
           />
           {selectedProject && (
             <div className="project-summary-card full">
-              <span>Projeto selecionado</span>
-              <strong>{selectedProject.coordenador}</strong>
-              <small>{selectedProject.setorFiocruz}</small>
+              <span>Projeto vinculado ao ID FIOTEC</span>
+              <strong>{form.metaProjeto || "Informe o Projeto ID / Meta"}</strong>
+              <small>
+                Referência FIOTEC: {selectedProject.projetoId} | {selectedProject.coordenador} |{" "}
+                {selectedProject.setorFiocruz}
+              </small>
             </div>
           )}
         </FormSection>
@@ -658,3 +653,4 @@ export function RequestFormPage({ onBack, onConsult }) {
     </section>
   );
 }
+
