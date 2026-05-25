@@ -288,54 +288,64 @@ function PublicRequestCard({ item }) {
   }
 
   return (
-    <article className={`record-card public-record-card ${expanded ? "expanded" : ""}`}>
-      <div className="record-card-header">
-        <div className="record-main">
+    <article className={`record-card public-record-card public-request-shell ${expanded ? "expanded" : ""}`}>
+      <div className="record-card-header public-request-card-top">
+        <div className="record-main public-request-main">
           <div className="record-title-row">
-            <span className="record-id">{item.id}</span>
-            <span className="record-status-badge">{item.status || "Recebida"}</span>
+            <span className="public-request-identity">
+              <span className="public-request-icon" aria-hidden="true">ID</span>
+              <strong>{item.id}</strong>
+            </span>
+            <span className="public-request-status">{item.status || "Recebida"}</span>
           </div>
-          <h4>{titleFromRequest(item)}</h4>
-          <small>
-            Criada em {createdAtDisplay(item)}
-            {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
-          </small>
+          <div className="public-request-title-block">
+            <h4>{titleFromRequest(item)}</h4>
+            <small>
+              Criada em {createdAtDisplay(item)}
+              {item.updatedAtClient ? ` | Atualizada em ${item.updatedAtClient}` : ""}
+            </small>
+          </div>
         </div>
         <div className="record-actions public-record-actions">
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-secondary public-pdf-action"
             aria-label={`Baixar PDF da solicitação ${item.id}`}
             onClick={() => generatePDF(item)}
           >
+            <span aria-hidden="true">PDF</span>
             Descarregar PDF
           </button>
           <button
             type="button"
-            className="record-toggle record-toggle-text"
+            className="record-toggle record-toggle-text public-more-action"
             aria-label={expanded ? "Recolher detalhes" : "Ver detalhes"}
             aria-expanded={expanded}
             onClick={toggleDetails}
           >
-            {expanded ? "Ocultar detalhes" : "Mais ações"}
+            {expanded ? "Ocultar detalhes" : "Mais a\u00e7\u00f5es"}
           </button>
         </div>
       </div>
 
-      <div className="record-summary-strip">
-        <div>
+      <div className="record-summary-strip public-request-summary">
+        <div className="public-summary-item">
+          <span className="public-summary-icon" aria-hidden="true">N</span>
           <span>Necessidade</span>
           <strong>{item.necessidade || "-"}</strong>
         </div>
-        <div>
+        <div className="public-summary-item">
+          <span className="public-summary-icon" aria-hidden="true">R</span>
           <span>Rota</span>
           <strong>{readableRouteFromRequest(item)}</strong>
         </div>
-        <div>
+        <div className="public-summary-item">
+          <span className="public-summary-icon" aria-hidden="true">I</span>
           <span>Ida</span>
           <strong>{formatDate(item.dataIda) || "-"}</strong>
         </div>
-        <div>
+        <div className="public-summary-item">
+          <span className="public-summary-icon" aria-hidden="true">P</span>
           <span>Projeto</span>
           <strong>{item.idFiotec || visibleMetaProjeto(item.metaProjeto) || "-"}</strong>
         </div>
